@@ -62,6 +62,7 @@ public:
   // One single iteration; to be run N_copies times. verbose = true: prints exact sol and trajectories
   vec run_single_iterations (bool verbose = true) const;
 
+  void reset ();
 
   // Setters
   void set_N_ensemble (int N_ensemble = N_ensemble_default);
