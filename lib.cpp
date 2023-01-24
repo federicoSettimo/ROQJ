@@ -20,17 +20,18 @@ cx_mat projector (const cx_vec &psi) {return psi*psi.t();}
 
 // ------------------------- METHODS DEFINITIONS -------------------------
 // --- Constructors
-void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, int N_traj_print) {
+void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print) {
   set_N_ensemble(N_ensemble);
   set_time(t_i, t_f, dt);
   set_N_copies(N_copies);
   set_dim_Hilbert_space(dim_Hilbert_space);
+  _print_trajectory = print_trajectory;
   set_N_traj_print (N_traj_print);
   set_initial_state();
 }
 
-roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, int N_traj_print) {
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, N_traj_print);
+roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print) {
+  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print);
 }
 
 // --- Setter
@@ -86,7 +87,7 @@ void roqj::set_dim_Hilbert_space (int dim_Hilbert_space) {
 }
 
 void roqj::set_N_traj_print (int N_traj_print) {
-  if (N_traj_print < 0 || N_traj_print > _N_ensemble) _N_traj_print = N_traj_print_default;
+  if (_print_trajectory && (N_traj_print <= 0 || N_traj_print > _N_ensemble)) _N_traj_print = N_traj_print_default;
   else _N_traj_print = N_traj_print;
 }
 
@@ -146,10 +147,11 @@ vec roqj::run_single_iterations (bool verbose) const {
 
   // Exact solution
   cx_mat rho_ex(_dim_Hilbert_space, _dim_Hilbert_space);
-  ofstream out_ex;
+  ofstream out_ex, traj;
   if (verbose) {
     rho_ex = projector(_initial_state);
     out_ex.open("analytic.txt");
+    traj.open("trajectories.txt");
   }
   
   
@@ -166,6 +168,10 @@ vec roqj::run_single_iterations (bool verbose) const {
 
     // Cycle on the ensemble members
     for (int i = 0; i < _N_ensemble; ++i) {
+      // Prints the trajectories
+      if (verbose && i < _N_traj_print)
+        traj << observable(projector(psi[i])) << " ";
+
       // Updates the average
       rho += projector(psi[i])/((double)_N_ensemble);
 
@@ -190,13 +196,6 @@ vec roqj::run_single_iterations (bool verbose) const {
           }
           sum_previous_eigs += real(eigval[j]);
         }
-        
-        /*
-        // Only for qubits
-        double pjump1 = real(eigval[0])*_dt;
-        if (z <= pjump1) psi[i] = eigvec.col(0);
-        else psi[i] = eigvec.col(1);
-        */
       }
       else { // Free evolution
         psi[i] -= K(rho, t)*psi[i]*complex<double>(0.,1.)*_dt;
@@ -206,6 +205,8 @@ vec roqj::run_single_iterations (bool verbose) const {
     // Storing the observable
     observables[n_observable] = observable(rho);
     n_observable++;
+
+    traj << endl;
   }
   return observables;
 }
@@ -213,13 +214,16 @@ vec roqj::run_single_iterations (bool verbose) const {
 
 // --- Running with all the copies
 void roqj::run () {
-  cout << "Rate Operator Quantum Jumps - running " << _N_copies << " copies.\n";
-  cout << "\tEnsemble size = " << _N_ensemble << ", " << _dim_Hilbert_space << "-dimensional Hilbert space\n";
-  cout << "\tt_i = " << _t_i << ", t_f = " << _t_f << ", dt = " << _dt << endl << endl;
+  cout << "\nRate Operator Quantum Jumps - running " << _N_copies << " copies.\n";
+  cout << "\tEnsemble size = " << _N_ensemble << ", " << _dim_Hilbert_space << "-dimensional Hilbert space,\n";
+  cout << "\tt_i = " << _t_i << ", t_f = " << _t_f << ", dt = " << _dt << ",\n";
+  if (_print_trajectory)
+    cout << "\tPrinting " << _N_traj_print << " trajectories.\n\n";
+  else cout << endl;
 
   ofstream params;
   params.open("params.txt");
-  params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _dim_Hilbert_space;
+  params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << _dim_Hilbert_space;
 
   cout << "Running copy " << 1 << "/" << _N_copies << "...\n";
   _observable += run_single_iterations(true)/((double)_N_copies);
