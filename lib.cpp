@@ -14,20 +14,23 @@ bool isNormalised (const cx_vec &psi) {return arma::norm(psi) == 1;}
 
 cx_mat comm (const cx_mat &A, const cx_mat &B) {return A*B-B*A;}
 
+cx_mat anticomm (const cx_mat &A, const cx_mat &B) {return A*B+B*A;}
+
 cx_mat projector (const cx_vec &psi) {return psi*psi.t();}
 
 // ------------------------- METHODS DEFINITIONS -------------------------
 // --- Constructors
-void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space) {
+void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, int N_traj_print) {
   set_N_ensemble(N_ensemble);
   set_time(t_i, t_f, dt);
   set_N_copies(N_copies);
   set_dim_Hilbert_space(dim_Hilbert_space);
+  set_N_traj_print (N_traj_print);
   set_initial_state();
 }
 
-roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space) {
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space);
+roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, int N_traj_print) {
+  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, N_traj_print);
 }
 
 // --- Setter
@@ -82,6 +85,11 @@ void roqj::set_dim_Hilbert_space (int dim_Hilbert_space) {
   else _dim_Hilbert_space = dim_Hilbert_space;
 }
 
+void roqj::set_N_traj_print (int N_traj_print) {
+  if (N_traj_print < 0 || N_traj_print > _N_ensemble) _N_traj_print = N_traj_print_default;
+  else _N_traj_print = N_traj_print;
+}
+
 void roqj::set_initial_state (const cx_vec &psi_i) {
   double n = arma::norm(psi_i);
   if (n == 0 || psi_i.size() != _dim_Hilbert_space) {
@@ -101,6 +109,7 @@ void roqj::set_initial_state () {
 int roqj::get_N_ensemble () const {return _N_ensemble;}
 int roqj::get_N_copies () const {return _N_copies;}
 int roqj::get_dim_Hilbert_space () const {return _dim_Hilbert_space;}
+int roqj::get_N_traj_print () const {return _N_traj_print;}
 double roqj::get_t_i () const {return _t_i;}
 double roqj::get_t_f () const {return _t_f;}
 double roqj::get_dt () const {return _dt;}
@@ -126,7 +135,7 @@ vec roqj::get_error_observable (string file_out) const {
 
 
 // --- Run single iteration
-vec roqj::run_single_iterations () const {
+vec roqj::run_single_iterations (bool verbose) const {
   srand(time(NULL));
 
   vec observables(_num_timesteps);
@@ -137,8 +146,23 @@ vec roqj::run_single_iterations () const {
   for (int i = 0; i <= _N_ensemble; ++i)
     psi[i] = _initial_state;
 
+  // Exact solution
+  cx_mat rho_ex(_dim_Hilbert_space, _dim_Hilbert_space);
+  ofstream out_ex;
+  if (verbose) {
+    rho_ex = projector(_initial_state);
+    out_ex.open("analytic.txt");
+  }
+  
+  
   // Time evolution
   for (double t = _t_i; t <= _t_f; t += _dt) {
+    // Prints and evolves the exact solution
+    if (verbose) {
+      out_ex << observable(rho_ex) << endl;
+      rho_ex += (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+    }
+
     // Average state
     cx_mat rho(_dim_Hilbert_space, _dim_Hilbert_space, arma::fill::zeros);
 
@@ -152,9 +176,9 @@ vec roqj::run_single_iterations () const {
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(arma::trace(R))) { // Jump
-        cx_vec eigval;
-        cx_mat eigvec;
+      if (z < real(arma::trace(R))*_dt) { // Jump
+        cx_vec eigval(_dim_Hilbert_space);
+        cx_mat eigvec(_dim_Hilbert_space,_dim_Hilbert_space);
         eig_gen(eigval, eigvec, R);
 
         // Chose in which eigenvalue perform the jump
@@ -162,16 +186,11 @@ vec roqj::run_single_iterations () const {
         bool already_jumped = false;
         for (int j = 0; j < _dim_Hilbert_space && !already_jumped; ++j) {
           // If z is in the j-th bin, it jumps to the j-th eigenstate
-          if (z >= sum_previous_eigs && z < sum_previous_eigs + real(eigval[i])) {
+          if (z >= sum_previous_eigs*_dt && z < (sum_previous_eigs + real(eigval[j]))*_dt) {
             already_jumped = true;
-            cx_vec post_jump_state(_dim_Hilbert_space);
-            for (int k = 0; k < _dim_Hilbert_space; ++k) {
-              // j-th eigenstate = j-th coloumn of the eigenvectors matrix
-              post_jump_state[k] = eigvec(k,j);
-            }
-            psi[i] = post_jump_state;
+            psi[i] = eigvec.col(j);
           }
-          sum_previous_eigs += real(eigval[i]);
+          sum_previous_eigs += real(eigval[j]);
         }
       }
       else { // Free evolution
@@ -197,8 +216,11 @@ void roqj::run () {
   params.open("params.txt");
   params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _dim_Hilbert_space;
 
-  for (int i = 0; i < _N_copies; ++i) {
+  cout << "Running copy " << 1 << "/" << _N_copies << "...\n";
+  _observable += run_single_iterations(true)/((double)_N_copies);
+
+  for (int i = 1; i < _N_copies; ++i) {
     cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
-    _observable += run_single_iterations()/((double)_N_copies);
+    _observable += run_single_iterations(false)/((double)_N_copies);
   }
 }
