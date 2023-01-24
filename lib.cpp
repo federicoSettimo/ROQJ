@@ -96,13 +96,11 @@ void roqj::set_initial_state (const cx_vec &psi_i) {
     set_initial_state();
     return;
   }
-  _initial_state = psi_i;
-  normalise(_initial_state);
+  _initial_state = normalise(psi_i);
 }
 
 void roqj::set_initial_state () {
-  _initial_state = cx_vec(_dim_Hilbert_space, arma::fill::ones);
-  normalise(_initial_state);
+  _initial_state = normalise(cx_vec(_dim_Hilbert_space, arma::fill::ones));
 }
 
 // --- Getters
@@ -192,11 +190,18 @@ vec roqj::run_single_iterations (bool verbose) const {
           }
           sum_previous_eigs += real(eigval[j]);
         }
+        
+        /*
+        // Only for qubits
+        double pjump1 = real(eigval[0])*_dt;
+        if (z <= pjump1) psi[i] = eigvec.col(0);
+        else psi[i] = eigvec.col(1);
+        */
       }
       else { // Free evolution
         psi[i] -= K(rho, t)*psi[i]*complex<double>(0.,1.)*_dt;
-        normalise(psi[i]);
       }
+      psi[i] = normalise(psi[i]);
     }
     // Storing the observable
     observables[n_observable] = observable(rho);
