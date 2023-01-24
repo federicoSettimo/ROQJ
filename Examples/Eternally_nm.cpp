@@ -49,19 +49,8 @@ int main() {
 
   jump.run();
 
-  jump.get_observable("average_1.txt");
-  jump.get_error_observable("error_1.txt");
-
-  jump.reset();
-  //jump.run();
-  
-  /*jump.get_observable("average_2.txt");
-  jump.get_error_observable("error_2.txt");
-
-  jump.run();
-
-  jump.get_observable("average_3.txt");
-  jump.get_error_observable("error_3.txt");*/
+  jump.get_observable("average.txt");
+  jump.get_error_observable("error.txt");
 
   return 0;
 }
