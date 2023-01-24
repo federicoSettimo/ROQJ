@@ -225,7 +225,7 @@ void roqj::run () {
   params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << _dim_Hilbert_space;
   params.close();
 
-  /*arma::mat matrix_observables(_num_timesteps, _N_copies, fill::zeros);
+  arma::mat matrix_observables(_num_timesteps, _N_copies, fill::zeros);
   for (int i = 0; i < _N_copies; ++i) {
     cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
     vec this_obs = run_single_iterations(i==0);
@@ -236,30 +236,6 @@ void roqj::run () {
   for (int i = 0; i < _num_timesteps; ++i) {
     _observable[i] = mean(matrix_observables.row(i));
     _sigma_observable[i] = stddev(matrix_observables.row(i));
-  }*/
-
-  /*vector<vec> observables(_N_copies);
-  for (int i = 0; i < _N_copies; ++i) {
-    cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
-    observables[i] = run_single_iterations(i==0);
-  }
-
-  for (int i = 0; i < _num_timesteps; ++i) {
-    double mean = 0., err = 0.;
-    for (int j = 0; j < _N_copies; ++j)
-      mean += observables[j](i)/((double)_N_copies);
-    for (int j = 0; j < _N_copies; ++j)
-      err += pow(observables[j](i)-mean,2)/((double)_N_copies-1.);
-    _observable[i] = mean;
-    _sigma_observable[i] = sqrt(err);
-  }*/
-
-  cout << "Running copy " << 1 << "/" << _N_copies << "...\n";
-  _observable += run_single_iterations(true)/((double)_N_copies);
-
-  for (int i = 1; i < _N_copies; ++i) {
-    cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
-    _observable += run_single_iterations(false)/((double)_N_copies);
   }
 }
 
