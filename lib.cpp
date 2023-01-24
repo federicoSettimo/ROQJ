@@ -32,6 +32,7 @@ void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_
 
 roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print) {
   initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print);
+  srand(time(NULL));
 }
 
 // --- Setter
@@ -135,8 +136,6 @@ vec roqj::get_error_observable (string file_out) const {
 
 // --- Run single iteration
 vec roqj::run_single_iterations (bool verbose) const {
-  srand(time(NULL));
-
   vec observables(_num_timesteps);
   int n_observable = 0;
 
