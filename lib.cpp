@@ -269,7 +269,8 @@ void roqj::print_info () const {
 // ------------------------- ROQJ class -------------------------
 // --- Constructors
 qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
-  roqj(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
+  srand(time(NULL));
+  initialize(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
 }
 
 // --- Jump
