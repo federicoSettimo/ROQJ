@@ -19,8 +19,9 @@ cx_mat anticomm (const cx_mat &A, const cx_mat &B) {return A*B+B*A;}
 cx_mat projector (const cx_vec &psi) {return psi*psi.t();}
 
 // ------------------------- METHODS DEFINITIONS -------------------------
+// ------------------------- ROQJ class -------------------------
 // --- Constructors
-void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print) {
+void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose) {
   set_N_ensemble(N_ensemble);
   set_time(t_i, t_f, dt);
   set_N_copies(N_copies);
@@ -28,10 +29,11 @@ void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_
   _print_trajectory = print_trajectory;
   set_N_traj_print (N_traj_print);
   set_initial_state();
+  _verbose=verbose;
 }
 
-roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print) {
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print);
+roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose) {
+  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print,verbose);
   srand(time(NULL));
 }
 
@@ -179,26 +181,10 @@ vec roqj::run_single_iterations (bool verbose) const {
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(arma::trace(R))*_dt) { // Jump
-        cx_vec eigval(_dim_Hilbert_space);
-        cx_mat eigvec(_dim_Hilbert_space,_dim_Hilbert_space);
-        eig_gen(eigval, eigvec, R);
-
-        // Chose in which eigenvalue perform the jump
-        double sum_previous_eigs = 0.;
-        bool already_jumped = false;
-        for (int j = 0; j < _dim_Hilbert_space && !already_jumped; ++j) {
-          // If z is in the j-th bin, it jumps to the j-th eigenstate
-          if (z >= sum_previous_eigs*_dt && z < (sum_previous_eigs + real(eigval[j]))*_dt) {
-            already_jumped = true;
-            psi[i] = eigvec.col(j);
-          }
-          sum_previous_eigs += real(eigval[j]);
-        }
-      }
-      else { // Free evolution
+      if (z < real(arma::trace(R))*_dt) // Jump
+        psi[i] = jump(R,z);
+      else // Free evolution
         psi[i] -= K(rho, t)*psi[i]*complex<double>(0.,1.)*_dt;
-      }
       psi[i] = normalise(psi[i]);
     }
     // Storing the observable
@@ -213,21 +199,18 @@ vec roqj::run_single_iterations (bool verbose) const {
 
 // --- Running with all the copies
 void roqj::run () {
-  cout << "\nRate Operator Quantum Jumps - running " << _N_copies << " copies.\n";
-  cout << "\tEnsemble size = " << _N_ensemble << ", " << _dim_Hilbert_space << "-dimensional Hilbert space,\n";
-  cout << "\tt_i = " << _t_i << ", t_f = " << _t_f << ", dt = " << _dt << ",\n";
-  if (_print_trajectory)
-    cout << "\tPrinting " << _N_traj_print << " trajectories.\n\n";
-  else cout << endl;
+  if (_verbose)
+    print_info();
 
   ofstream params;
   params.open("params.txt");
   params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << _dim_Hilbert_space;
   params.close();
 
-  arma::mat matrix_observables(_num_timesteps, _N_copies, fill::zeros);
+  arma::mat matrix_observables(_num_timesteps, _N_copies, arma::fill::zeros);
   for (int i = 0; i < _N_copies; ++i) {
-    cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
+    if (_verbose)
+      cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
     vec this_obs = run_single_iterations(i==0);
     for (int j = 0; j < _num_timesteps; ++j)
       matrix_observables(j,i) = this_obs(j);
@@ -239,7 +222,72 @@ void roqj::run () {
   }
 }
 
+cx_vec roqj::jump (const cx_mat &R, double z) const {
+  cx_vec eigval(_dim_Hilbert_space);
+  cx_mat eigvec(_dim_Hilbert_space,_dim_Hilbert_space);
+  eig_gen(eigval, eigvec, R);
+
+  // Chose in which eigenvalue perform the jump
+  double sum_previous_eigs = 0.;
+  for (int j = 0; j < _dim_Hilbert_space; ++j) {
+    if (real(eigval[j]) < 0) {
+      cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+      exit(EXIT_FAILURE);
+    }
+    // If z is in the j-th bin, it jumps to the j-th eigenstate
+    if (z >= sum_previous_eigs*_dt && z < (sum_previous_eigs + real(eigval[j]))*_dt)
+      return eigvec.col(j);
+    sum_previous_eigs += real(eigval[j]);
+  }
+  return cx_vec(_dim_Hilbert_space,arma::fill::ones);
+}
+
 void roqj::reset () {
   _observable.reset();
   _sigma_observable.reset();
+}
+
+void roqj::print_info () const {
+  cout << "\nRate Operator Quantum Jumps - running " << _N_copies << " copies.\n";
+  cout << "\tEnsemble size = " << _N_ensemble << ", " << _dim_Hilbert_space << "-dimensional Hilbert space,\n";
+  cout << "\tt_i = " << _t_i << ", t_f = " << _t_f << ", dt = " << _dt << ",\n";
+  if (_print_trajectory)
+    cout << "\tPrinting " << _N_traj_print << " trajectories.\n\n";
+  else cout << endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+// ------------------------- ROQJ class -------------------------
+// --- Constructors
+qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
+  roqj(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
+}
+
+// --- Jump
+cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {
+  cx_vec eigval(2);
+  cx_mat eigvec(2,2);
+  eig_gen(eigval, eigvec, R);
+
+  double lambda1 = real(eigval[0]), lambda2 = real(eigval[1]), pjump1 = lambda1*_dt;
+  if (lambda1 >= 0. && lambda2 >= 0.) {// Normal jump
+    // With probability pjump1, it jumps to the first eigenstate of R
+    if (z <= pjump1)
+      return eigvec.col(0);
+    else return eigvec.col(1);
+  }
+  else {// Reverse jump ----- Not implemented??
+    cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+    exit(EXIT_FAILURE);
+  }
+  return cx_vec(2,arma::fill::ones);
 }
