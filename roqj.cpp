@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "roqj.h"
 
 // Free-evolution efective Hamiltonian
 cx_mat K (const cx_mat &rho, double t) {
