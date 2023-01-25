@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 filein = open("params.txt")
 Ncopies = int(filein.readline())
@@ -41,6 +42,7 @@ plt.ylabel(r'$Re(\rho_{12})$')
 plt.xlabel(r'$t$')
 plt.title('Driven')
 
-plt.savefig("Examples/Eternally_nm.png")
+if sys.argv.__len__() > 1:
+    plt.savefig("Examples/"+sys.argv[1])
 
 plt.show()
