@@ -1,14 +1,4 @@
 #include "roqj.h"
-
-// Free-evolution efective Hamiltonian
-cx_mat K (const cx_mat &rho, double t) {
-  return H(t) + 0.5*(imag(C(rho, t)) - complex<double>(0.,1.)*(Gamma(t) + real(C(rho, t)) ) );
-}
-
-cx_mat J_prime (const cx_mat &rho, double t) {
-  return J(rho,t) + 0.5*(C(rho, t)*rho + rho*C(rho, t).t());
-}
-
 // ------------------------- FUNCTIONS DEFINITIONS -------------------------
 bool isNormalised (const cx_vec &psi) {return arma::norm(psi) == 1;}
 
@@ -182,15 +172,17 @@ vec roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_ensemble);
 
-      cx_mat R = J_prime(projector(psi[i]),t);
+      cx_mat R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).t());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
       if (z < real(arma::trace(R))*_dt) // Jump
         psi[i] = jump(R,z);
-      else // Free evolution
-        psi[i] -= K(rho, t)*psi[i]*complex<double>(0.,1.)*_dt;
+      else {// Free evolution
+        cx_mat K = H(t) + 0.5*(imag(C(projector(psi[i]), t)) - complex<double>(0.,1.)*(Gamma(t) + real(C(projector(psi[i]), t)) ) );
+        psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
+      }
       psi[i] = normalise(psi[i]);
     }
     // Storing the observable
@@ -289,8 +281,8 @@ cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {
   if (lambda1 >= 0. && lambda2 >= 0.) {// Normal jump
     // With probability pjump1, it jumps to the first eigenstate of R
     if (z <= pjump1)
-      return eigvec.col(0)*exp(-arg(eigvec.col(0)[0]));
-    else return eigvec.col(1)*exp(-arg(eigvec.col(1)[0]));
+      return eigvec.col(0);
+    else return eigvec.col(1);
   }
   else {// Reverse jump ----- Not implemented??
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
