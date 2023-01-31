@@ -1,4 +1,4 @@
-#include "../lib.h"
+#include "../roqj.h"
 
 using namespace std;
 using namespace arma;

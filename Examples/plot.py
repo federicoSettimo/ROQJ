@@ -40,9 +40,10 @@ plt.errorbar(t,avg_obs,err_obs,color='green', label="Average")
 plt.legend(loc="lower right")
 plt.ylabel(r'$Re(\rho_{12})$')
 plt.xlabel(r'$t$')
-plt.title('Driven')
-
 if sys.argv.__len__() > 1:
-    plt.savefig("Examples/"+sys.argv[1])
+    plt.title(sys.argv[1])
+
+if sys.argv.__len__() > 2:
+    plt.savefig("Examples/"+sys.argv[2])
 
 plt.show()
