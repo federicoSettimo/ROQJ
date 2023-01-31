@@ -11,7 +11,7 @@ cx_mat projector (const cx_vec &psi) {return psi*psi.t();}
 // ------------------------- METHODS DEFINITIONS -------------------------
 // ------------------------- ROQJ class -------------------------
 // --- Constructors
-void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose) {
+void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
   set_N_ensemble(N_ensemble);
   set_time(t_i, t_f, dt);
   set_N_copies(N_copies);
@@ -20,10 +20,11 @@ void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_
   set_N_traj_print(N_traj_print);
   set_initial_state();
   _verbose=verbose;
+  set_threshold(threshold);
 }
 
-roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose) {
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print,verbose);
+roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
+  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print,verbose,threshold);
   srand(time(NULL));
 }
 
@@ -102,6 +103,14 @@ void roqj::set_print_traj (bool print) {_print_trajectory = print;}
 
 void roqj::set_verbose (bool verbose) {_verbose = verbose;}
 
+void roqj::set_threshold (double threshold) {
+  if (threshold < 0.)
+    threshold = -threshold;
+  if (threshold > 0.1)
+    _threshold = threshold_default;
+  else _threshold = threshold;
+}
+
 // --- Getters
 int roqj::get_N_ensemble () const {return _N_ensemble;}
 int roqj::get_N_copies () const {return _N_copies;}
@@ -110,6 +119,7 @@ int roqj::get_N_traj_print () const {return _N_traj_print;}
 double roqj::get_t_i () const {return _t_i;}
 double roqj::get_t_f () const {return _t_f;}
 double roqj::get_dt () const {return _dt;}
+double roqj::get_threshold () const {return _threshold;}
 cx_vec roqj::get_initial_state () const {return _initial_state;}
 vec roqj::get_observable () const {return _observable;}
 vec roqj::get_error_observable () const {return _sigma_observable;}
@@ -228,7 +238,7 @@ cx_vec roqj::jump (const cx_mat &R, double z) const {
   // Chose in which eigenvalue perform the jump
   double sum_previous_eigs = 0.;
   for (int j = 0; j < _dim_Hilbert_space; ++j) {
-    if (real(eigval[j]) < 0) {
+    if (real(eigval[j]) < _threshold) {
       cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
       exit(EXIT_FAILURE);
     }
@@ -278,7 +288,7 @@ cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {
   eig_gen(eigval, eigvec, R);
 
   double lambda1 = real(eigval[0]), lambda2 = real(eigval[1]), pjump1 = lambda1*_dt;
-  if (lambda1 >= 0. && lambda2 >= 0.) {// Normal jump
+  if (lambda1 >= -_threshold && lambda2 >= -_threshold) {// Normal jump
     // With probability pjump1, it jumps to the first eigenstate of R
     if (z <= pjump1)
       return eigvec.col(0);

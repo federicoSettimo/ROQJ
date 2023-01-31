@@ -17,7 +17,7 @@ using namespace arma;
 
 // Default values
 const int N_ensemble_default = 10000, N_copies_default = 1, dim_Hilbert_space_default = 2, N_traj_print_default = 5;
-const double t_i_default = 0., t_f_default = 10., dt_default = 0.;
+const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_default = 1.e-20;
 
 // External functions needed: H(t), J(rho, t), Gamma(t), C(t), observable(rho)
 extern cx_mat H (double t);
@@ -31,16 +31,16 @@ class roqj {
 protected:
   int _N_ensemble, _N_copies, _dim_Hilbert_space, _num_timesteps, _N_traj_print;
   bool _print_trajectory, _verbose;
-  double _t_i, _t_f, _dt;
+  double _t_i, _t_f, _dt, _threshold;
   vec _observable, _sigma_observable;
   cx_vec _initial_state;
 public:
   /* 
-    Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (int) dim Hilbert space, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose
-    Default values: N_ensemble = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, dim_Hilbert_space = 2, print_trajectory = true, N_traj_print = 3, verbose = true
+    Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (int) dim Hilbert space, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose, (double) threshold for negativity
+    Default values: N_ensemble = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, dim_Hilbert_space = 2, print_trajectory = true, N_traj_print = 3, verbose = true, threshold = 1e-20
   */
-  roqj (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
-  void initialize (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
+  roqj (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
+  void initialize (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
 
 
   // Setting the initial state. If psi_i is not a dim_Hilbert_space-dimensional vector, default initializer
@@ -78,6 +78,7 @@ public:
   void set_N_traj_print (int N_traj_print = N_traj_print_default);
   void set_print_traj (bool print = true);
   void set_verbose (bool verbose = true);
+  void set_threshold (double threshold = threshold_default);
 
 
   // Getters
@@ -88,6 +89,7 @@ public:
   double get_t_i () const;
   double get_t_f () const;
   double get_dt () const;
+  double get_threshold () const;
   cx_vec get_initial_state () const;
   
   // Returns the values of the observable
