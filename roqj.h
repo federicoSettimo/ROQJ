@@ -43,7 +43,7 @@ public:
   void initialize (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
 
 
-  // Setting the initial state.If psi_i is not a dim_Hilbert_space-dimensional vector, default initializer
+  // Setting the initial state. If psi_i is not a dim_Hilbert_space-dimensional vector, default initializer
   void set_initial_state (const cx_vec &psi_i);
   // Setting the initial state. Default is (|1>+...+|dim_Hilbert_space>)/sqrt(dim_Hilbert_space). Returns false if psi_i is not a dim_Hilbert_space-dimensional vector
   void set_initial_state ();
@@ -76,6 +76,8 @@ public:
   void set_time (double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default);
   void set_dim_Hilbert_space (int dim_Hilbert_space = dim_Hilbert_space_default);
   void set_N_traj_print (int N_traj_print = N_traj_print_default);
+  void set_print_traj (bool print = true);
+  void set_verbose (bool verbose = true);
 
 
   // Getters

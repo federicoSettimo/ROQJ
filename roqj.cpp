@@ -27,7 +27,7 @@ void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_
   set_N_copies(N_copies);
   set_dim_Hilbert_space(dim_Hilbert_space);
   _print_trajectory = print_trajectory;
-  set_N_traj_print (N_traj_print);
+  set_N_traj_print(N_traj_print);
   set_initial_state();
   _verbose=verbose;
 }
@@ -91,6 +91,7 @@ void roqj::set_dim_Hilbert_space (int dim_Hilbert_space) {
 
 void roqj::set_N_traj_print (int N_traj_print) {
   if (_print_trajectory && (N_traj_print <= 0 || N_traj_print > _N_ensemble)) _N_traj_print = N_traj_print_default;
+  else if (!_print_trajectory) _N_traj_print = 0;
   else _N_traj_print = N_traj_print;
 }
 
@@ -106,6 +107,10 @@ void roqj::set_initial_state (const cx_vec &psi_i) {
 void roqj::set_initial_state () {
   _initial_state = normalise(cx_vec(_dim_Hilbert_space, arma::fill::ones));
 }
+
+void roqj::set_print_traj (bool print) {_print_trajectory = print;}
+
+void roqj::set_verbose (bool verbose) {_verbose = verbose;}
 
 // --- Getters
 int roqj::get_N_ensemble () const {return _N_ensemble;}
@@ -161,7 +166,8 @@ vec roqj::run_single_iterations (bool verbose) const {
     // Prints and evolves the exact solution
     if (verbose) {
       out_ex << observable(rho_ex) << endl;
-      rho_ex += (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+      rho_ex = rho_ex + (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+      rho_ex /= arma::trace(rho_ex);
     }
 
     // Average state
@@ -170,7 +176,7 @@ vec roqj::run_single_iterations (bool verbose) const {
     // Cycle on the ensemble members
     for (int i = 0; i < _N_ensemble; ++i) {
       // Prints the trajectories
-      if (verbose && i < _N_traj_print)
+      if (verbose && i < _N_traj_print && _print_trajectory)
         traj << observable(projector(psi[i])) << " ";
 
       // Updates the average
@@ -236,7 +242,7 @@ cx_vec roqj::jump (const cx_mat &R, double z) const {
     }
     // If z is in the j-th bin, it jumps to the j-th eigenstate
     if (z >= sum_previous_eigs*_dt && z < (sum_previous_eigs + real(eigval[j]))*_dt)
-      return eigvec.col(j);
+      return eigvec.col(j)*exp(-arg(eigvec.col(j)[1]));
     sum_previous_eigs += real(eigval[j]);
   }
   return cx_vec(_dim_Hilbert_space,arma::fill::ones);
@@ -283,8 +289,8 @@ cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {
   if (lambda1 >= 0. && lambda2 >= 0.) {// Normal jump
     // With probability pjump1, it jumps to the first eigenstate of R
     if (z <= pjump1)
-      return eigvec.col(0);
-    else return eigvec.col(1);
+      return eigvec.col(0)*exp(-arg(eigvec.col(0)[0]));
+    else return eigvec.col(1)*exp(-arg(eigvec.col(1)[0]));
   }
   else {// Reverse jump ----- Not implemented??
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
