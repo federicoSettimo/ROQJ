@@ -35,7 +35,7 @@ for i in range(Npoints):
 for i in range(Ntraj):
     plt.plot(t, trajectories[i,:], alpha=.1)
 plt.plot(t,exact,color='black', label="Exact")
-plt.errorbar(t,avg_obs,err_obs, marker='o',color='green', label="Average", errorevery=50, markevery=50, linewidth=0, elinewidth=1)
+plt.errorbar(t,avg_obs,err_obs, marker='o', markersize=3, color='red', label="Average", errorevery=50, markevery=50, linewidth=0, elinewidth=1)
 
 plt.legend(loc="lower right")
 plt.ylabel(r'$Re(\rho_{12})$')
