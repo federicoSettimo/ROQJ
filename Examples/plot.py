@@ -38,12 +38,14 @@ plt.plot(t,exact,color='black', label="Exact")
 plt.errorbar(t,avg_obs,err_obs, marker='o', markersize=3, color='red', label="Average", errorevery=50, markevery=50, linewidth=0, elinewidth=1)
 
 plt.legend(loc="lower right")
-plt.ylabel(r'$Re(\rho_{12})$')
 plt.xlabel(r'$t$')
 if sys.argv.__len__() > 1:
     plt.title(sys.argv[1])
 
 if sys.argv.__len__() > 2:
-    plt.savefig("Examples/"+sys.argv[2])
+    plt.ylabel(sys.argv[2])
+
+if sys.argv.__len__() > 3:
+    plt.savefig("Examples/"+sys.argv[3])
 
 plt.show()
