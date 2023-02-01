@@ -238,7 +238,7 @@ cx_vec roqj::jump (const cx_mat &R, double z) const {
   // Chose in which eigenvalue perform the jump
   double sum_previous_eigs = 0.;
   for (int j = 0; j < _dim_Hilbert_space; ++j) {
-    if (real(eigval[j]) < _threshold) {
+    if (real(eigval[j]) < -_threshold) {
       cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
       exit(EXIT_FAILURE);
     }

@@ -17,7 +17,7 @@ using namespace arma;
 
 // Default values
 const int N_ensemble_default = 10000, N_copies_default = 1, dim_Hilbert_space_default = 2, N_traj_print_default = 5;
-const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_default = 1.e-20;
+const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_default = 1.e-10;
 
 // External functions needed: H(t), J(rho, t), Gamma(t), C(t), observable(rho)
 extern cx_mat H (double t);
