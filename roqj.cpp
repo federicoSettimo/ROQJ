@@ -188,7 +188,7 @@ vec roqj::run_single_iterations (bool verbose) const {
       double z = (double)rand()/((double)RAND_MAX);
 
       if (z < real(arma::trace(R))*_dt) // Jump
-        psi[i] = jump(R,z);
+        psi[i] = this->jump(R,z);
       else {// Free evolution
         cx_mat K = H(t) + 0.5*(imag(C(projector(psi[i]), t)) - complex<double>(0.,1.)*(Gamma(t) + real(C(projector(psi[i]), t)) ) );
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
@@ -299,4 +299,94 @@ cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {
     exit(EXIT_FAILURE);
   }
   return cx_vec(2,arma::fill::ones);
+}
+
+
+// --- Run single iteration
+vec qubit_roqj::run_single_iterations (bool verbose) const {
+  vec observables(_num_timesteps);
+  int n_observable = 0;
+
+  // Allocating _N_ensemble copies of the initial state
+  std::vector<cx_vec> psi(_N_ensemble);
+  for (int i = 0; i <= _N_ensemble; ++i)
+    psi[i] = _initial_state;
+
+  // Exact solution
+  cx_mat rho_ex(2, 2);
+  ofstream out_ex, traj;
+  if (verbose) {
+    rho_ex = projector(_initial_state);
+    out_ex.open("analytic.txt");
+    traj.open("trajectories.txt");
+  }
+  
+  
+  // Time evolution
+  for (double t = _t_i; t <= _t_f; t += _dt) {
+    // Prints and evolves the exact solution
+    if (verbose) {
+      out_ex << observable(rho_ex) << endl;
+      rho_ex = rho_ex + (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+      rho_ex /= arma::trace(rho_ex);
+    }
+
+    // Average state
+    cx_mat rho(2, 2, arma::fill::zeros);
+
+    // Cycle on the ensemble members
+    for (int i = 0; i < _N_ensemble; ++i) {
+      // Prints the trajectories
+      if (verbose && i < _N_traj_print && _print_trajectory)
+        traj << observable(projector(psi[i])) << " ";
+
+      // Updates the average
+      rho += projector(psi[i])/((double)_N_ensemble);
+
+      cx_mat R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).t());
+      
+      // Draws a random number and calculates whether the evolution is deterministic or via a jump
+      double z = (double)rand()/((double)RAND_MAX);
+
+      if (z < real(arma::trace(R))*_dt) // Jump
+        psi[i] = this->jump(R,z);
+      else {// Free evolution
+        cx_mat K = H(t) + 0.5*(imag(C(projector(psi[i]), t)) - complex<double>(0.,1.)*(Gamma(t) + real(C(projector(psi[i]), t)) ) );
+        psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
+      }
+      psi[i] = normalise(psi[i]);
+    }
+    // Storing the observable
+    observables[n_observable] = observable(rho);
+    n_observable++;
+
+    if (verbose) traj << endl;
+  }
+  return observables;
+}
+
+
+// --- Running with all the copies
+void qubit_roqj::run () {
+  if (_verbose)
+    print_info();
+
+  ofstream params;
+  params.open("params.txt");
+  params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << 2;
+  params.close();
+
+  arma::mat matrix_observables(_num_timesteps, _N_copies, arma::fill::zeros);
+  for (int i = 0; i < _N_copies; ++i) {
+    if (_verbose)
+      cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
+    vec this_obs = run_single_iterations(i==0);
+    for (int j = 0; j < _num_timesteps; ++j)
+      matrix_observables(j,i) = this_obs(j);
+  }
+
+  for (int i = 0; i < _num_timesteps; ++i) {
+    _observable[i] = mean(matrix_observables.row(i));
+    _sigma_observable[i] = stddev(matrix_observables.row(i));
+  }
 }

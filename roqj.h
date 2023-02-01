@@ -114,6 +114,10 @@ public:
 
   // Performs the jump with only 2 possible channels
   cx_vec jump (const cx_mat &R, double z) const;
+
+  void run ();
+
+  vec run_single_iterations (bool verbose = true) const;
 };
 
 // ------------------------- FUNCTIONS -------------------------
