@@ -8,6 +8,14 @@ cx_mat anticomm (const cx_mat &A, const cx_mat &B) {return A*B+B*A;}
 
 cx_mat projector (const cx_vec &psi) {return psi*psi.t();}
 
+cx_mat BlochToMatrix (double x, double y, double z) {
+  double r = sqrt(x*x + y*y + z*z);
+  if (r > 1.) {x /= r; y /= r; z /= r;}
+  complex<double> I(0,1), one(1,0);
+  cx_mat sigma_z = {{one,0},{0,-one}}, Id = {{one,0},{0,one}}, sigma_x = {{0,one},{one,0}}, sigma_y = {{0,-I},{I,0}};
+  return .5*(Id + x*sigma_x + y*sigma_y + z*sigma_z);
+}
+
 // ------------------------- METHODS DEFINITIONS -------------------------
 // ------------------------- ROQJ class -------------------------
 // --- Constructors
@@ -280,6 +288,21 @@ qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N
   srand(time(NULL));
   initialize(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
 }
+
+// --- Set initial state Bloch
+void qubit_roqj::set_initial_state (double x, double y, double z) {_initial_state = BlochToMatrix(x,y,z);}
+
+// -- Set initial state vector
+void qubit_roqj::set_initial_state (const cx_vec &psi) {
+  if (arma::norm(psi) == 0 || psi.size() != 2) {
+    set_initial_state();
+    return;
+  }
+  _initial_state = normalise(psi);
+}
+
+// Default initial state
+void qubit_roqj::set_initial_state () {_initial_state = BlochToMatrix(0.,0.,0.);}
 
 // --- Jump
 cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {

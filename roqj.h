@@ -103,6 +103,10 @@ public:
   vec get_error_observable (string file_out) const;
 };
 
+
+
+
+
 // ------------------------- Qubit ROQJ class -------------------------
 class qubit_roqj:public roqj {
 public:
@@ -112,13 +116,26 @@ public:
   */
   qubit_roqj (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
 
+  // Setting initial state via the Bloch representation
+  void set_initial_state (double x, double y, double z);
+  // Setting initial state with a 2-d vector
+  void set_initial_state (const cx_vec &psi);
+  // Default initializer - Id/2
+  void set_initial_state ();
+
   // Performs the jump with only 2 possible channels
   cx_vec jump (const cx_mat &R, double z) const;
 
+  // Runs with the 2-channel jumps
   void run ();
 
+  // Single iteration with the 2-channel jumps
   vec run_single_iterations (bool verbose = true) const;
 };
+
+
+
+
 
 // ------------------------- FUNCTIONS -------------------------
 // Checks whether the vector is normalised
@@ -132,5 +149,8 @@ cx_mat anticomm (const cx_mat &A, const cx_mat &B);
 
 // Projector |psi><psi|
 cx_mat projector (const cx_vec &psi);
+
+// Density operator from its Bloch vector representation
+cx_mat BlochToMatrix (double x, double y, double z);
 
 #endif
