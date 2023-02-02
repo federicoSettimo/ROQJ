@@ -5,9 +5,12 @@ using namespace arma;
 
 complex<double> I(0,1), one(1,0);
 cx_mat sigma_p = {{0,one},{0,0}}, sigma_m = {{0,0},{one,0}}, sigma_z = {{one,0}, {0,-one}}, id = {{one,0}, {0,one}}, sigma_x = {{0,one},{one,0}}, sigma_y = {{0,-I},{I,0}};
-double gamma_p (double t) {return 1.;}
-double gamma_m (double t) {return 1.;}
-double gamma_z (double t) {return -.5*tanh(t);}
+//double gamma_p (double t) {return 1.;}
+//double gamma_m (double t) {return 1.;}
+//double gamma_z (double t) {return -.5*tanh(t);}
+double gamma_p (double t) {return exp(-2.*t);}
+double gamma_m (double t) {return exp(-t);}
+double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t))*tanh(t);}
 double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 //double b (double t) {return 0.;}
 
