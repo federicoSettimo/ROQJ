@@ -289,9 +289,6 @@ qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N
   initialize(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
 }
 
-// --- Set initial state Bloch
-void qubit_roqj::set_initial_state (double x, double y, double z) {_initial_state = BlochToMatrix(x,y,z);}
-
 // -- Set initial state vector
 void qubit_roqj::set_initial_state (const cx_vec &psi) {
   if (arma::norm(psi) == 0 || psi.size() != 2) {
@@ -302,7 +299,7 @@ void qubit_roqj::set_initial_state (const cx_vec &psi) {
 }
 
 // Default initial state
-void qubit_roqj::set_initial_state () {_initial_state = BlochToMatrix(0.,0.,0.);}
+void qubit_roqj::set_initial_state () {_initial_state = {\./sqrt(2.), 1./sqrt(2.)};}
 
 // --- Jump
 cx_vec qubit_roqj::jump (const cx_mat &R, double z) const {

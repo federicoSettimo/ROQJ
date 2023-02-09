@@ -116,8 +116,6 @@ public:
   */
   qubit_roqj (int N_ensemble = N_ensemble_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
 
-  // Setting initial state via the Bloch representation
-  void set_initial_state (double x, double y, double z);
   // Setting initial state with a 2-d vector
   void set_initial_state (const cx_vec &psi);
   // Default initializer - Id/2
