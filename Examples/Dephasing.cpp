@@ -3,7 +3,7 @@
 using namespace std;
 using namespace arma;
 
-const double gamma_z = 1.;
+const double gamma_z = 5.;
 
 complex<double> I(0,1), one(1,0);
 cx_mat sigma_z = {{one,0},{0,-one}}, Id = {{one,0},{0,one}}, sigma_x = {{0,one},{one,0}}, sigma_y = {{0,-I},{I,0}};
@@ -41,8 +41,9 @@ int main() {
 
   jump.set_N_traj_print(Ntraj);
 
-  cx_vec initialState = {sin(M_PI/8.), cos(M_PI/8.)};
+  cx_vec initialState = {sin(M_PI/3.), cos(M_PI/3.)};
   //cx_vec initialState = {1,0};
+  //cx_vec initialState = {1./sqrt(2.), 1./sqrt(2.)};
   jump.set_initial_state(initialState);
 
   jump.run();
