@@ -64,7 +64,8 @@ int main() {
 
   jump.set_N_traj_print(Ntraj);
 
-  cx_vec initialState = {1./sqrt(2),0.,0.,1./sqrt(2.)};
+  //cx_vec initialState = {1./sqrt(2),0.,0.,1./sqrt(2.)};
+  cx_vec initialState = {0.,1./sqrt(2),1./sqrt(2.),0.};
   jump.set_initial_state(initialState);
 
   jump.run();
