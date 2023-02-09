@@ -10,7 +10,8 @@ cx_mat sigma_p = {{0,one},{0,0}}, sigma_m = {{0,0},{one,0}}, sigma_z = {{one,0},
 //double gamma_z (double t) {return -.5*tanh(t);}
 double gamma_p (double t) {return exp(-2.*t);}
 double gamma_m (double t) {return exp(-t);}
-double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t))*tanh(t);}
+//double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t));}
+double gamma_z (double t) {return -sqrt(gamma_p(t)*gamma_m(t));}
 double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 //double b (double t) {return 0.;}
 
@@ -37,13 +38,15 @@ cx_mat C (const cx_mat &rho, double t) {
 //cx_mat C (const cx_mat &rho, double t) {return .5*(gamma_p(t)+gamma_m(t)+2.*gamma_z(t))*id;}
 
 double observable (const cx_mat &rho) {return real(rho(0,1));}
+//double observable (const cx_mat &rho) {return real(trace(rho*sigma_z));}
 
 int main () {
-  double tmin = 0., tmax = 10, dt = 0.01;
-  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 5;
+  double tmin = 0., tmax = 5, dt = 0.01;
+  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = false;
 
   qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, 2, printTraj, Ntraj);
+  jump.set_N_traj_print(Ntraj);
 
   cx_vec initialState = {sin(M_PI/8.), cos(M_PI/8.)};
   jump.set_initial_state(initialState);
