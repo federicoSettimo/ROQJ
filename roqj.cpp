@@ -61,12 +61,13 @@ void roqj::set_t_f (double t_f) {
 }
 
 void roqj::set_dt (double dt) {
-  if (dt == dt_default || dt < 0. || dt >= _t_f - _t_i) _dt = dt = _t_f/10000.;
+  if (dt == dt_default || dt <= 0. || dt >= _t_f - _t_i) _dt = _t_f/10000.;
   else _dt = dt;
   _num_timesteps = (int)(_t_f - _t_i)/_dt;
   _observable.resize(_num_timesteps);
   _sigma_observable.resize(_num_timesteps);
 }
+
 void roqj::set_time (double t_i, double t_f, double dt) {
   if (t_f > t_i) {
     _t_i = t_i;
