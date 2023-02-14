@@ -1,12 +1,9 @@
-#include "../roqj_eigen.h"
+#include "../roqj.h"
 #include <chrono>
 
 using namespace std::chrono;
 using namespace std;
 using namespace Eigen;
-
-
-
 
 double gamma_p (double t) {return 1.;}
 double gamma_m (double t) {return 1.;}
@@ -41,7 +38,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 //MatrixXcd C (const MatrixXcd &rho, double t) {return .5*(gamma_p(t)+gamma_m(t)+2.*gamma_z(t))*id;}
 
 double observable (const MatrixXcd &rho) {return real(rho(0,1));}
-//double observable (const MatrixXcd &rho) {return real(trace(rho*sigma_z));}
+//double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
 
 int main () {
   double tmin = 0., tmax = 5, dt = 0.01;
@@ -55,7 +52,11 @@ int main () {
   initialState << sin(M_PI/8.), cos(M_PI/8.);
   jump.set_initial_state(initialState);
 
+  auto start = high_resolution_clock::now();
   jump.run();
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<seconds>(stop - start);
+  cout << "\tExecurion time: " << duration.count() << " s\n";
 
   jump.get_observable("average.txt");
   jump.get_error_observable("error.txt");
