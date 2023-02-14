@@ -5,13 +5,7 @@ using namespace std::chrono;
 using namespace std;
 using namespace Eigen;
 
-complex<double> I(0,1), one(1,0);
-static Eigen::MatrixXcd sigma_x {{0,1},{1,0}};
-static Eigen::MatrixXcd sigma_y {{0,-I},{I,0}};
-static Eigen::MatrixXcd sigma_z {{1,0},{0,-1}};
-static Eigen::MatrixXcd sigma_p {{0,1},{0,0}};
-static Eigen::MatrixXcd sigma_m {{0,0},{1,0}};
-static Eigen::MatrixXcd id {{1,0},{0,1}};
+
 
 
 double gamma_p (double t) {return 1.;}

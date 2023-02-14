@@ -1,3 +1,7 @@
+// For a reasonbale execution time, use the flags
+// -ffast-math -fno-math-errno -O3
+// both for the library and for the program
+
 /*
   Class producing the ROQJ trajectories.
   Required an external definition of the operators defining the dynamic (H, J, Gamma), of C defining the diferent ROs, and of the chosen observble
@@ -155,5 +159,18 @@ MatrixXcd projector (const VectorXcd &psi);
 
 // Density operator from its Bloch VectorXdtor representation
 MatrixXcd BlochToMatrix (double x, double y, double z);
+
+
+
+
+
+// ------------------------- PAULI MATRICES -------------------------
+static complex<double> I(0,1), one(1,0);
+static Eigen::MatrixXcd sigma_x {{0,1},{1,0}};
+static Eigen::MatrixXcd sigma_y {{0,-I},{I,0}};
+static Eigen::MatrixXcd sigma_z {{1,0},{0,-1}};
+static Eigen::MatrixXcd sigma_p {{0,1},{0,0}};
+static Eigen::MatrixXcd sigma_m {{0,0},{1,0}};
+static Eigen::MatrixXcd id {{1,0},{0,1}};
 
 #endif

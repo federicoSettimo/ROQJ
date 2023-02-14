@@ -11,15 +11,7 @@ MatrixXcd projector (const VectorXcd &psi) {return psi*psi.transpose().conjugate
 MatrixXcd BlochToMatrix (double x, double y, double z) {
   double r = sqrt(x*x + y*y + z*z);
   if (r > 1.) {x /= r; y /= r; z /= r;}
-  complex<double> I(0,1), one(1,0);
-  MatrixXcd sigma_z, Id = MatrixXcd::Identity(2,2), sigma_x, sigma_y;
-  sigma_z << 1,0,
-            0,-1;
-  sigma_x << 0,1,
-            1,0;
-  sigma_y << 0,-I,
-            I,0;
-  return .5*(Id + x*sigma_x + y*sigma_y + z*sigma_z);
+  return .5*(id + x*sigma_x + y*sigma_y + z*sigma_z);
 }
 
 // ------------------------- METHODS DEFINITIONS -------------------------
