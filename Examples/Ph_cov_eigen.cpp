@@ -51,7 +51,7 @@ double observable (const MatrixXcd &rho) {return real(rho(0,1));}
 
 int main () {
   double tmin = 0., tmax = 5, dt = 0.01;
-  int N_ensemble = 1000, Ncopies = 3, dimH = 2, Ntraj = 10;
+  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = false;
 
   qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, 2, printTraj, Ntraj);
@@ -61,14 +61,10 @@ int main () {
   initialState << sin(M_PI/8.), cos(M_PI/8.);
   jump.set_initial_state(initialState);
 
-  auto start = high_resolution_clock::now();
-  jump.run_single_iterations();
-  auto stop = high_resolution_clock::now();
-  auto duration = duration_cast<microseconds>(stop - start);
-  cout << "Execution time: " << duration.count() << endl;
+  jump.run();
 
-  //jump.get_observable("average.txt");
-  //jump.get_error_observable("error.txt");
+  jump.get_observable("average.txt");
+  jump.get_error_observable("error.txt");
 
   return 0;
 }

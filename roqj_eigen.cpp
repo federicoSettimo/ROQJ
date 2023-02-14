@@ -216,7 +216,6 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
     if (verbose) {traj << endl;}
   }
-  cout << "Ok, it arrives at the end of time\n";
   return observables;
 }
 
@@ -236,7 +235,6 @@ void roqj::run () {
     if (_verbose)
       cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
     observables.row(i) = run_single_iterations(i==0);
-    cout << "After returning the observable\n";
   }
 
   for (int i = 0; i < _num_timesteps; ++i) {
@@ -390,9 +388,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     n_observable++;
 
     if (verbose) traj << endl;
-    //cout << t << endl;
   }
-  cout << "Ok: it reaches the end of time\n";
   return observables;
 }
 
@@ -412,7 +408,6 @@ void qubit_roqj::run () {
     if (_verbose)
       cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
     VectorXd this_obs = run_single_iterations(i==0);
-    cout << "Ok first iteration returned\n";
     for (int j = 0; j < _num_timesteps; ++j)
       matrix_observables(j,i) = this_obs(j);
   }
