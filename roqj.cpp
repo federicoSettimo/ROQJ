@@ -1,4 +1,4 @@
-#include "roqj_eigen.h"
+#include "roqj.h"
 // ------------------------- FUNCTIONS DEFINITIONS -------------------------
 bool isNormalized (const VectorXcd &psi) {return psi.norm() == 1;}
 
