@@ -4,7 +4,7 @@
 
 /*
   Class producing the ROQJ trajectories.
-  Required an external definition of the operators defining the dynamic (H, J, Gamma), of C defining the diferent ROs, and of the chosen observble
+  Required an external definition of the operators defining the dynamics (H, J, Gamma), of C defining the diferent ROs, and of the chosen observble
 */
 #ifndef _ROQJ_H_
 #define _ROQJ_H_
