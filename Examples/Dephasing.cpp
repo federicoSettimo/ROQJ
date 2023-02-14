@@ -1,35 +1,31 @@
 #include "../roqj.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 
 const double gamma_z = 5.;
-
-complex<double> I(0,1), one(1,0);
-cx_mat sigma_z = {{one,0},{0,-one}}, Id = {{one,0},{0,one}}, sigma_x = {{0,one},{one,0}}, sigma_y = {{0,-I},{I,0}};
-
-double observable (const cx_mat &rho) {
-  return real(trace(rho*sigma_z));
+double observable (const MatrixXcd &rho) {
+  return real((rho*sigma_z).trace());
 }
 
 // Free-evolution effective Hamiltonian
-cx_mat H (double t) {
-  return cx_mat(2,2,fill::zeros);
+MatrixXcd H (double t) {
+  return MatrixXcd::Zero(2,2);
 }
 
 // J_t(rho)
-cx_mat J (const cx_mat &rho, double t) {
+MatrixXcd J (const MatrixXcd &rho, double t) {
   return 0.5*gamma_z*sigma_z*rho*sigma_z;
 }
 
 // Gamma(t)
-cx_mat Gamma (double t) {
-  return .5*gamma_z*Id;
+MatrixXcd Gamma (double t) {
+  return .5*gamma_z*id;
 }
 
 // C(t)
-cx_mat C (const cx_mat &rho, double t) {
-  return (1.-exp(-t))*gamma_z*Id;
+MatrixXcd C (const MatrixXcd &rho, double t) {
+  return (1.-exp(-t))*gamma_z*id;
 }
 
 int main() {
@@ -41,9 +37,10 @@ int main() {
 
   jump.set_N_traj_print(Ntraj);
 
-  cx_vec initialState = {sin(M_PI/3.), cos(M_PI/3.)};
-  //cx_vec initialState = {1,0};
-  //cx_vec initialState = {1./sqrt(2.), 1./sqrt(2.)};
+  VectorXcd initialState(2);
+  initialState << sin(M_PI/3.), cos(M_PI/3.);
+  //initialState << 1,0;
+  //initialState << 1./sqrt(2.), 1./sqrt(2.);
   jump.set_initial_state(initialState);
 
   jump.run();
