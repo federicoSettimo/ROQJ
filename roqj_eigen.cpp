@@ -69,7 +69,7 @@ void roqj::set_t_f (double t_f) {
 void roqj::set_dt (double dt) {
   if (dt == dt_default || dt <= 0. || dt >= _t_f - _t_i) _dt = _t_f/10000.;
   else _dt = dt;
-  _num_timesteps = (int)(_t_f - _t_i)/_dt;
+  _num_timesteps = (int)(_t_f - _t_i)/_dt + 1;
   _observable.resize(_num_timesteps);
   _sigma_observable.resize(_num_timesteps);
 }
@@ -164,7 +164,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
   // Allocating _N_ensemble copies of the initial state
   std::vector<VectorXcd> psi(_N_ensemble);
   for (int i = 0; i <= _N_ensemble; ++i)
-    psi[i] = _initial_state;
+    psi.push_back(_initial_state);
 
   // Exact solution
   MatrixXcd rho_ex(_dim_Hilbert_space, _dim_Hilbert_space);
@@ -216,6 +216,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
     if (verbose) {traj << endl;}
   }
+  cout << "Ok, it arrives at the end of time\n";
   return observables;
 }
 
@@ -239,15 +240,19 @@ void roqj::run () {
   }
 
   for (int i = 0; i < _num_timesteps; ++i) {
-    _observable[i] = mean(observables.col(i));
-    _sigma_observable[i] = stddev(observables.col(i));
+    _observable[i] = observables.col(i).mean();
+    // Really there is no built-in method for the std deviation?
+    _sigma_observable[i] = sqrt((observables.col(i).array() - _observable[i]).square().sum() / (observables.col(i).size() - 1));
   }
 }
 
 VectorXcd roqj::jump (const MatrixXcd &R, double z) const {
-  VectorXcd eigval(_dim_Hilbert_space);
-  MatrixXcd eigvec(_dim_Hilbert_space,_dim_Hilbert_space);
-  eig_gen(eigval, eigvec, R);
+  ComplexEigenSolver<MatrixXcd> eigs;
+  eigs.compute(R);
+  VectorXcd eigval = eigs.eigenvalues();
+  MatrixXcd eigvec = eigs.eigenvectors();
+  //VectorXcd eigval;
+  //MatrixXcd eigvec;
 
   // Chose in which eigenvalue perform the jump
   double sum_previous_eigs = 0.;
@@ -261,12 +266,7 @@ VectorXcd roqj::jump (const MatrixXcd &R, double z) const {
       return eigvec.col(j)*exp(-arg(eigvec.col(j)[1]));
     sum_previous_eigs += real(eigval[j]);
   }
-  return VectorXcd(_dim_Hilbert_space,arma::fill::ones);
-}
-
-void roqj::reset () {
-  _observable.reset();
-  _sigma_observable.reset();
+  return VectorXcd::Ones(_dim_Hilbert_space).normalized();
 }
 
 void roqj::print_info () const {
@@ -288,7 +288,7 @@ void roqj::print_info () const {
 
 
 
-// ------------------------- ROQJ class -------------------------
+// ------------------------- Qubit ROQJ class -------------------------
 // --- Constructors
 qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
   srand(time(NULL));
@@ -297,7 +297,7 @@ qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N
 
 // -- Set initial state vector
 void qubit_roqj::set_initial_state (const VectorXcd &psi) {
-  if (norm(psi) == 0 || psi.size() != 2) {
+  if (psi.norm() == 0 || psi.size() != 2) {
     set_initial_state();
     return;
   }
@@ -305,13 +305,14 @@ void qubit_roqj::set_initial_state (const VectorXcd &psi) {
 }
 
 // Default initial state
-void qubit_roqj::set_initial_state () {_initial_state = {1./sqrt(2.), 1./sqrt(2.)};}
+void qubit_roqj::set_initial_state () {VectorXcd a; a << 1./sqrt(2.), 1./sqrt(2.); _initial_state = a;}
 
 // --- Jump
 VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z) const {
-  VectorXcd eigval(2);
-  MatrixXcd eigvec(2,2);
-  eig_gen(eigval, eigvec, R);
+  ComplexEigenSolver<MatrixXcd> eigs;
+  eigs.compute(R);
+  VectorXcd eigval = eigs.eigenvalues();
+  MatrixXcd eigvec = eigs.eigenvectors();
 
   double lambda1 = real(eigval[0]), lambda2 = real(eigval[1]), pjump1 = lambda1*_dt;
   if (lambda1 >= -_threshold && lambda2 >= -_threshold) {// Normal jump
@@ -324,7 +325,7 @@ VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z) const {
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
     exit(EXIT_FAILURE);
   }
-  return VectorXcd(2,fill::ones);
+  return VectorXcd::Ones(2).normalized();
 }
 
 
@@ -334,12 +335,13 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
   int n_observable = 0;
 
   // Allocating _N_ensemble copies of the initial state
-  std::vector<VectorXcd> psi(_N_ensemble);
+  std::vector<VectorXcd> psi;
   for (int i = 0; i <= _N_ensemble; ++i)
-    psi[i] = _initial_state;
+    //psi[i] = _initial_state;
+    psi.push_back(_initial_state);
 
   // Exact solution
-  MatrixXcd rho_ex(2, 2);
+  MatrixXcd rho_ex = MatrixXcd::Zero(2, 2);
   ofstream out_ex, traj;
   if (verbose) {
     rho_ex = projector(_initial_state);
@@ -354,11 +356,11 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     if (verbose) {
       out_ex << observable(rho_ex) << endl;
       rho_ex = rho_ex + (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
-      rho_ex /= trace(rho_ex);
+      rho_ex /= rho_ex.trace();
     }
 
     // Average state
-    MatrixXcd rho(2, 2, fill::zeros);
+    MatrixXcd rho = MatrixXcd::Zero(2, 2);
 
     // Cycle on the ensemble members
     for (int i = 0; i < _N_ensemble; ++i) {
@@ -369,15 +371,16 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_ensemble);
 
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).t());
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).transpose());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(arma::trace(R))*_dt) // Jump
+      if (z < real(R.trace())*_dt){ // Jump
         psi[i] = this->jump(R,z);
+      }
       else {// Free evolution
-        MatrixXcd K = H(t) + 0.5*(imag(C(projector(psi[i]), t)) - complex<double>(0.,1.)*(Gamma(t) + real(C(projector(psi[i]), t)) ) );
+        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
       psi[i] = psi[i].normalized();
@@ -387,7 +390,9 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     n_observable++;
 
     if (verbose) traj << endl;
+    //cout << t << endl;
   }
+  cout << "Ok: it reaches the end of time\n";
   return observables;
 }
 
@@ -402,17 +407,18 @@ void qubit_roqj::run () {
   params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << 2;
   params.close();
 
-  MatrixXd matrix_observables(_num_timesteps, _N_copies, arma::fill::zeros);
+  MatrixXd matrix_observables = MatrixXd::Zero(_num_timesteps, _N_copies);
   for (int i = 0; i < _N_copies; ++i) {
     if (_verbose)
       cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
     VectorXd this_obs = run_single_iterations(i==0);
+    cout << "Ok first iteration returned\n";
     for (int j = 0; j < _num_timesteps; ++j)
       matrix_observables(j,i) = this_obs(j);
   }
 
   for (int i = 0; i < _num_timesteps; ++i) {
-    _observable[i] = mean(matrix_observables.row(i));
-    _sigma_observable[i] = stddev(matrix_observables.row(i));
+    _observable[i] = matrix_observables.row(i).mean();
+    _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
 }

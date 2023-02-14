@@ -5,7 +5,10 @@
 #ifndef _ROQJ_H_
 #define _ROQJ_H_
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 #include <complex>
 #include <vector>
 #include <cstring>
@@ -67,8 +70,6 @@ public:
   void print_info () const;
 
 
-  void reset ();
-
   // Setters
   void set_N_ensemble (int N_ensemble = N_ensemble_default);
   void set_N_copies (int N_ensemble = N_copies_default);
@@ -111,6 +112,8 @@ public:
 
 // ------------------------- Qubit ROQJ class -------------------------
 class qubit_roqj:public roqj {
+private:
+  Vector2cd _initial_state;
 public:
   /* 
     Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose
