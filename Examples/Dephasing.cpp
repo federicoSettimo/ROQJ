@@ -15,17 +15,18 @@ MatrixXcd H (double t) {
 
 // J_t(rho)
 MatrixXcd J (const MatrixXcd &rho, double t) {
-  return 0.5*gamma_z*sigma_z*rho*sigma_z;
+  return gamma_z*sigma_z*rho*sigma_z;
 }
 
 // Gamma(t)
 MatrixXcd Gamma (double t) {
-  return .5*gamma_z*id;
+  return gamma_z*id;
 }
 
 // C(t)
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  return (1.-exp(-t))*gamma_z*id;
+  //return (1.-exp(-t))*gamma_z*id;
+  return gamma_z*id;
 }
 
 int main() {

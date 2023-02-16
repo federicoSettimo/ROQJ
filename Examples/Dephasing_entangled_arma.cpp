@@ -1,5 +1,5 @@
 // 2 entangled qubits, dephasing of one. Eval if the collapse of the second into |g,e> causes the same on the first one
-#include "../roqj.h"
+#include "../roqj_arma.h"
 
 using namespace std;
 using namespace arma;
@@ -41,23 +41,24 @@ cx_mat H (double t) {
 
 // J_t(rho)
 cx_mat J (const cx_mat &rho, double t) {
-  return 0.5*gamma_z*kron(Id, sigma_z)*rho*kron(Id, sigma_z);
+  return gamma_z*kron(Id, sigma_z)*rho*kron(Id, sigma_z);
 }
 
 // Gamma(t)
 cx_mat Gamma (double t) {
-  return kron(Id, .5*gamma_z*Id);
+  return kron(Id, gamma_z*Id);
 }
 
 // C(t)
 cx_mat C (const cx_mat &rho, double t) {
-  return kron(Id, (1.-exp(-t))*gamma_z*Id);
+  //return kron(Id, (1.-exp(-t))*gamma_z*Id);
+  return kron(Id, gamma_z*Id);
 }
 
 
 int main() {
   double tmin = 0., tmax = 10, dt = 0.01;
-  int N_ensemble = 100, Ncopies = 1, dimH = 4, Ntraj = 7;
+  int N_ensemble = 10000, Ncopies = 3, dimH = 4, Ntraj = 7;
   bool printTraj = true;
 
   roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, dimH, printTraj, Ntraj);

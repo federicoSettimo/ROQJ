@@ -40,17 +40,17 @@ MatrixXcd H (double t) {
 
 // J_t(rho)
 MatrixXcd J (const MatrixXcd &rho, double t) {
-  return 0.5*gamma_z*kroneckerProduct(id, sigma_z)*rho*kroneckerProduct(id, sigma_z);
+  return gamma_z*kroneckerProduct(id, sigma_z)*rho*kroneckerProduct(id, sigma_z);
 }
 
 // Gamma(t)
 MatrixXcd Gamma (double t) {
-  return kroneckerProduct(id, .5*gamma_z*id);
+  return kroneckerProduct(id, gamma_z*id);
 }
 
 // C(t)
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  return kroneckerProduct(id, (1.-exp(-t))*gamma_z*id);
+  return kroneckerProduct(id, gamma_z*id);
 }
 
 
@@ -67,7 +67,6 @@ int main() {
   initialState << 0.,1./sqrt(2),1./sqrt(2.),0.;
   //initialState << 1./sqrt(2),0.,0.,1./sqrt(2.);
   jump.set_initial_state(initialState);
-  cout << Gamma(0) << endl;
 
   jump.run();
 
