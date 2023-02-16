@@ -30,7 +30,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 }
 
 int main() {
-  double tmin = 0., tmax = 10, dt = 0.01;
+  double tmin = 0., tmax = 1, dt = 0.001;
   int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 15;
   bool printTraj = true;
 
