@@ -17,8 +17,8 @@ MatrixXcd BlochToMatrix (double x, double y, double z) {
 // ------------------------- METHODS DEFINITIONS -------------------------
 // ------------------------- ROQJ class -------------------------
 // --- Constructors
-void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
-  set_N_ensemble(N_ensemble);
+void roqj::initialize (int N_states, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
+  set_N_states(N_states);
   set_time(t_i, t_f, dt);
   set_N_copies(N_copies);
   set_dim_Hilbert_space(dim_Hilbert_space);
@@ -29,15 +29,15 @@ void roqj::initialize (int N_ensemble, double t_i, double t_f, double dt, int N_
   set_threshold(threshold);
 }
 
-roqj::roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print,verbose,threshold);
+roqj::roqj (int N_states, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
+  initialize(N_states, t_i, t_f, dt, N_copies, dim_Hilbert_space, print_trajectory, N_traj_print,verbose,threshold);
   srand(time(NULL));
 }
 
 // --- Setter
-void roqj::set_N_ensemble (int N_ensemble) {
-  if (N_ensemble <= 0) _N_ensemble = N_ensemble_default;
-  else _N_ensemble = N_ensemble;
+void roqj::set_N_states (int N_states) {
+  if (N_states <= 0) _N_states = N_states_default;
+  else _N_states = N_states;
 }
 
 void roqj::set_N_copies (int N_copies) {
@@ -88,7 +88,7 @@ void roqj::set_dim_Hilbert_space (int dim_Hilbert_space) {
 }
 
 void roqj::set_N_traj_print (int N_traj_print) {
-  if (_print_trajectory && (N_traj_print <= 0 || N_traj_print > _N_ensemble)) _N_traj_print = N_traj_print_default;
+  if (_print_trajectory && (N_traj_print <= 0 || N_traj_print > _N_states)) _N_traj_print = N_traj_print_default;
   else if (!_print_trajectory) _N_traj_print = 0;
   else _N_traj_print = N_traj_print;
 }
@@ -119,7 +119,7 @@ void roqj::set_threshold (double threshold) {
 }
 
 // --- Getters
-int roqj::get_N_ensemble () const {return _N_ensemble;}
+int roqj::get_N_states () const {return _N_states;}
 int roqj::get_N_copies () const {return _N_copies;}
 int roqj::get_dim_Hilbert_space () const {return _dim_Hilbert_space;}
 int roqj::get_N_traj_print () const {return _N_traj_print;}
@@ -153,9 +153,9 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
   VectorXd observables(_num_timesteps);
   int n_observable = 0;
 
-  // Allocating _N_ensemble copies of the initial state
-  std::vector<VectorXcd> psi(_N_ensemble);
-  for (int i = 0; i <= _N_ensemble; ++i)
+  // Allocating _N_states copies of the initial state
+  std::vector<VectorXcd> psi(_N_states);
+  for (int i = 0; i <= _N_states; ++i)
     psi.push_back(_initial_state);
 
   // Exact solution
@@ -181,13 +181,13 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
     MatrixXcd rho = MatrixXcd::Zero(_dim_Hilbert_space, _dim_Hilbert_space);
 
     // Cycle on the ensemble members
-    for (int i = 0; i < _N_ensemble; ++i) {
+    for (int i = 0; i < _N_states; ++i) {
       // Prints the trajectories
       if (verbose && i < _N_traj_print && _print_trajectory)
         traj << observable(projector(psi[i])) << " ";
 
       // Updates the average
-      rho += projector(psi[i])/((double)_N_ensemble);
+      rho += projector(psi[i])/((double)_N_states);
 
       MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
       
@@ -219,7 +219,7 @@ void roqj::run () {
 
   ofstream params;
   params.open("params.txt");
-  params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << _dim_Hilbert_space;
+  params << _N_copies << endl << _N_states << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << _dim_Hilbert_space;
   params.close();
 
   MatrixXd observables(_N_copies, _num_timesteps);
@@ -261,7 +261,7 @@ VectorXcd roqj::jump (const MatrixXcd &R, double z) const {
 
 void roqj::print_info () const {
   cout << "\nRate Operator Quantum Jumps - running " << _N_copies << " copies.\n";
-  cout << "\tEnsemble size = " << _N_ensemble << ", " << _dim_Hilbert_space << "-dimensional Hilbert space,\n";
+  cout << "\tNumber of states = " << _N_states << ", " << _dim_Hilbert_space << "-dimensional Hilbert space,\n";
   cout << "\tt_i = " << _t_i << ", t_f = " << _t_f << ", dt = " << _dt << ",\n";
   if (_print_trajectory)
     cout << "\tPrinting " << _N_traj_print << " trajectories.\n\n";
@@ -280,9 +280,9 @@ void roqj::print_info () const {
 
 // ------------------------- Qubit ROQJ class -------------------------
 // --- Constructors
-qubit_roqj::qubit_roqj (int N_ensemble, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
+qubit_roqj::qubit_roqj (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
   srand(time(NULL));
-  initialize(N_ensemble, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
+  initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
 }
 
 // -- Set initial state vector
@@ -324,9 +324,9 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
   VectorXd observables(_num_timesteps);
   int n_observable = 0;
 
-  // Allocating _N_ensemble copies of the initial state
+  // Allocating _N_states copies of the initial state
   std::vector<VectorXcd> psi;
-  for (int i = 0; i <= _N_ensemble; ++i)
+  for (int i = 0; i <= _N_states; ++i)
     //psi[i] = _initial_state;
     psi.push_back(_initial_state);
 
@@ -353,13 +353,13 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     MatrixXcd rho = MatrixXcd::Zero(2, 2);
 
     // Cycle on the ensemble members
-    for (int i = 0; i < _N_ensemble; ++i) {
+    for (int i = 0; i < _N_states; ++i) {
       // Prints the trajectories
       if (verbose && i < _N_traj_print && _print_trajectory)
         traj << observable(projector(psi[i])) << " ";
 
       // Updates the average
-      rho += projector(psi[i])/((double)_N_ensemble);
+      rho += projector(psi[i])/((double)_N_states);
 
       MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).transpose());
       
@@ -392,7 +392,7 @@ void qubit_roqj::run () {
 
   ofstream params;
   params.open("params.txt");
-  params << _N_copies << endl << _N_ensemble << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << 2;
+  params << _N_copies << endl << _N_states << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_traj_print << endl << 2;
   params.close();
 
   MatrixXd matrix_observables = MatrixXd::Zero(_num_timesteps, _N_copies);
@@ -409,3 +409,141 @@ void qubit_roqj::run () {
     _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+// ------------------------- ROQJ initially mixed -------------------------
+roqj_mixed::roqj_mixed (int N_states, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool verbose, double threshold) {
+  _N_states = N_states;
+  _t_i = t_i;
+  _t_f = t_f;
+  _dt = dt;
+  _num_timesteps = abs(_t_f-_t_i)/_dt;
+  _N_copies = N_copies;
+  _dim_Hilbert_space = dim_Hilbert_space;
+  _verbose = verbose;
+  _threshold = threshold;
+}
+
+// Setting the ensemble
+void roqj_mixed::set_ensemble (const vector<pair<double, VectorXcd>> &ensemble) {
+  _ensemble = ensemble;
+  double sum_p = 0.;
+  for (auto & elem : _ensemble) {
+    if (elem.first < 0.)
+      elem.first = -elem.first;
+    sum_p += elem.first;
+  }
+  if (sum_p == 0.) {
+    set_ensemble();
+    return;
+  }
+  if (sum_p != 1.) {
+    for (auto & elem : _ensemble)
+      elem.first /= sum_p;
+  }
+}
+
+void roqj_mixed::set_ensemble (const vector<double> &probabilities, const vector<VectorXcd> &states) {
+  if (probabilities.size() != states.size()) {
+    cerr << "Different number of probabilities and states -- EXIT\n";
+    exit(EXIT_FAILURE);
+  }
+  _ensemble.clear();
+  vector<pair<double, VectorXcd>> ens;
+  for (int i = 0; i < probabilities.size(); ++i)
+    ens.push_back(pair<double, VectorXcd>(probabilities[i], states[i]));
+  set_ensemble(ens);
+}
+
+void roqj_mixed::set_ensemble () {
+  VectorXcd init_state = VectorXcd::Ones(_dim_Hilbert_space).normalized();
+  _ensemble.clear();
+  _ensemble.push_back(pair<double, VectorXcd>(1., init_state));
+}
+
+// Runs the ROQJ for each state and takes the average state. Repeats it _N_copies time
+void roqj_mixed::run () {
+  _solver.initialize(_N_states, _t_i, _t_f, _dt, 1, _dim_Hilbert_space, false, 0, false, _threshold);
+  if (_verbose)
+    _solver.print_info();
+  MatrixXd matrix_observables = MatrixXd::Zero(_num_timesteps, _N_copies);
+  for (int i = 0; i < _N_copies; ++i) {
+    if (_verbose)
+      cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
+    VectorXd this_obs = run_single_iteration();
+    for (int j = 0; j < _num_timesteps; ++j)
+      matrix_observables(j,i) = this_obs(j);
+  }
+
+  for (int i = 0; i < _num_timesteps; ++i) {
+    _observable[i] = matrix_observables.row(i).mean();
+    _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
+  }
+}
+
+// Runs one single iteration for each member of the ensebles, returns the observable for the average at each time
+VectorXd roqj_mixed::run_single_iteration () {
+  VectorXd obs;
+  int i = 1;
+  for (auto & elem : _ensemble) {
+    _solver.set_initial_state(elem.second);
+    if (_verbose)
+      cout << "\tEnsemble member " << ++i << "/" << _ensemble.size() << "...\n";
+    obs += elem.first * _solver.run_single_iterations(false);
+  }
+  return obs;
+}
+
+VectorXd roqj_mixed::get_observable () const {return _observable;}
+VectorXd roqj_mixed::get_error_observable () const {return _sigma_observable;}
+
+VectorXd roqj_mixed::get_observable (string file_out) const {
+  ofstream out;
+  out.open(file_out);
+  for (int i = 0; i < _num_timesteps; ++i)
+    out << _observable[i] << endl;
+  return _observable;
+}
+
+VectorXd roqj_mixed::get_error_observable (string file_out) const {
+  ofstream out;
+  out.open(file_out);
+  for (int i = 0; i < _num_timesteps; ++i)
+    out << _sigma_observable[i] << endl;
+  return _sigma_observable;
+}
+
+
+  VectorXd roqj_mixed::get_exact_sol (string file_out) {
+    ofstream out;
+    bool verbose = file_out != "";
+    if (verbose)
+      out.open(file_out);
+
+    MatrixXcd rho = MatrixXcd::Zero(_dim_Hilbert_space, _dim_Hilbert_space);
+    for (auto & elem : _ensemble)
+      rho += elem.first*elem.second;
+
+    VectorXd obs = VectorXcd(_num_timesteps);
+    int n = 0;
+
+    for (double t = _t_i; t <= _t_f; t += _dt) {
+      double this_obs = observable(rho);
+      if (verbose)
+        out << this_obs << endl;
+      obs[n] = this_obs;
+      n++;
+      rho = rho + (-I*comm(H(t),rho) + J(rho,t) - 0.5*anticomm(Gamma(t),rho))*_dt;
+    }
+
+    return obs;
+  }
