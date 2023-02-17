@@ -533,7 +533,7 @@ VectorXd roqj_mixed::get_error_observable (string file_out) const {
     for (auto & elem : _ensemble)
       rho += elem.first*elem.second;
 
-    VectorXd obs = VectorXcd(_num_timesteps);
+    VectorXd obs = VectorXd(_num_timesteps);
     int n = 0;
 
     for (double t = _t_i; t <= _t_f; t += _dt) {
