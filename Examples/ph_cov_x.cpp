@@ -8,14 +8,14 @@
 using namespace std;
 using namespace Eigen;
 
-double gamma_p (double t) {return 1.;}
-double gamma_m (double t) {return 1.;}
-double gamma_z (double t) {return -.5*tanh(t);}
-//double gamma_p (double t) {return exp(-2.*t);}
-//double gamma_m (double t) {return exp(-t);}
-//double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t));}
+//double gamma_p (double t) {return 1.;}
+//double gamma_m (double t) {return 1.;}
+//double gamma_z (double t) {return -.5*tanh(t);}
+double gamma_p (double t) {return exp(-t);}
+double gamma_m (double t) {return exp(-t);}
+double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t));}
 //double gamma_z (double t) {return -sqrt(gamma_p(t)*gamma_m(t));}
-double b (double t) {return 10.*0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
+double b (double t) {return 2.*0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 //double b (double t) {return 0.;}
 
 MatrixXcd H (double t) {
@@ -36,16 +36,14 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   return z*sigma_z;
 }
 
-//double observable (const MatrixXcd &rho) {return real(rho(0,1));}
-double observable (const MatrixXcd &rho) {return real((rho*sigma_x).trace());}
+double observable (const MatrixXcd &rho) {return real((rho*sigma_y).trace());}
 
 int main () {
   double tmin = 0., tmax = 5, dt = 0.01;
   int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
-  bool printTraj = false;
+  bool printTraj = true;
 
-  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, 2, printTraj, Ntraj);
-  jump.set_N_traj_print(Ntraj);
+  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
@@ -53,8 +51,8 @@ int main () {
 
   jump.run();
 
-  jump.get_observable("average.txt");
-  jump.get_error_observable("error.txt");
+  jump.get_observable("average_2.txt");
+  jump.get_error_observable("error_2.txt");
 
   return 0;
 }
