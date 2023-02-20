@@ -47,7 +47,7 @@ protected:
 public:
   /* 
     Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (int) dim Hilbert space, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose, (double) threshold for negativity
-    Default values: N_states = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, dim_Hilbert_space = 2, print_trajectory = true, N_traj_print = 3, verbose = true, threshold = 1e-20
+    Default values: N_states = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, dim_Hilbert_space = 2, print_trajectory = true, N_traj_print = 3, verbose = true, threshold = 1e-10
   */
   roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
   void initialize (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
@@ -124,7 +124,7 @@ public:
     Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose
     Default values: N_states = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, print_trajectory = true, N_traj_print = 3, verbose = true
   */
-  qubit_roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true);
+  qubit_roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
 
   // Setting initial state with a 2-d VectorXdtor
   void set_initial_state (const VectorXcd &psi);
@@ -210,4 +210,13 @@ static Eigen::MatrixXcd sigma_p {{0,1},{0,0}};
 static Eigen::MatrixXcd sigma_m {{0,0},{1,0}};
 static Eigen::MatrixXcd id {{1,0},{0,1}};
 
+
+
+
+
+// ------------------------- SOME STATES -------------------------
+static Eigen::VectorXcd ground_state {{0.,1.}};
+static Eigen::VectorXcd excited_state {{1.,0.}};
+static Eigen::VectorXcd plus_state {{1./sqrt(2.),1./sqrt(2.)}};
+static Eigen::VectorXcd minus_state {{1./sqrt(2.),-1./sqrt(2.)}};
 #endif

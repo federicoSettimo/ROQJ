@@ -61,7 +61,7 @@ void roqj::set_t_f (double t_f) {
 void roqj::set_dt (double dt) {
   if (dt == dt_default || dt <= 0. || dt >= _t_f - _t_i) _dt = _t_f/10000.;
   else _dt = dt;
-  _num_timesteps = (int)(_t_f - _t_i)/_dt + 1;
+  _num_timesteps = (int)((_t_f - _t_i)/_dt) + 1;
   _observable.resize(_num_timesteps);
   _sigma_observable.resize(_num_timesteps);
 }
@@ -280,9 +280,9 @@ void roqj::print_info () const {
 
 // ------------------------- Qubit ROQJ class -------------------------
 // --- Constructors
-qubit_roqj::qubit_roqj (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose) {
+qubit_roqj::qubit_roqj (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
   srand(0);
-  initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose);
+  initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose, threshold);
 }
 
 // -- Set initial state vector
@@ -313,6 +313,7 @@ VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z) const {
   }
   else {// Reverse jump ----- Not implemented??
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+    cout << lambda1 << ", " << lambda2 << endl;
     exit(EXIT_FAILURE);
   }
   return VectorXcd::Ones(2).normalized();
@@ -508,7 +509,6 @@ void roqj_mixed::run () {
       if (_verbose)
         cout << "\tEnsemble member " << n++ << "/" << _ensemble.size() << "...\n";
       obs += elem.first * run_single_iterations(false);
-      //obs = elem.first * run_single_iterations(false);
     }
     if (_verbose) cout << endl;
 
