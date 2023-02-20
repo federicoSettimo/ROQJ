@@ -38,8 +38,8 @@ cx_mat C (const cx_mat &rho, double t) {
 }
 
 int main() {
-  double tmin = 0., tmax = 10, dt = 0.01;
-  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 5;
+  double tmin = 0., tmax = 5, dt = 0.05;
+  int N_ensemble = 10000, Ncopies = 2, dimH = 2, Ntraj = 5;
   bool printTraj = true;
 
   roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, dimH, printTraj, Ntraj);
