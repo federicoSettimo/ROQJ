@@ -8,7 +8,7 @@ Nensemble = int(filein.readline())
 ti = float(filein.readline())
 tf = float (filein.readline())
 dt = float(filein.readline())
-print_traj = bool(filein.readline())
+print_traj = filein.readline()
 Ntraj = int(filein.readline())
 dimH = int(filein.readline())
 Npoints = int((tf-ti)/dt)
@@ -27,13 +27,15 @@ for i in range(Npoints):
     exact[i] = f_exact.readline()
     avg_obs[i] = f_avg.readline()
     err_obs[i] = f_err.readline()
-    j = 0
-    line = filein.readline()
-    for x in line.split():
-        trajectories[j,i] = x
-        j+=1
-for i in range(Ntraj):
-    plt.plot(t, trajectories[i,:], alpha=.1)
+    if print_traj == True:
+        j = 0
+        line = filein.readline()
+        for x in line.split():
+            trajectories[j,i] = x
+            j+=1
+if print_traj == True:
+    for i in range(Ntraj):
+        plt.plot(t, trajectories[i,:], alpha=.1)
 plt.plot(t,exact,color='black', label="Exact")
 plt.errorbar(t,avg_obs,err_obs, marker='o', markersize=3, color='red', label="Average", errorevery=50, markevery=50, linewidth=0, elinewidth=1)
 

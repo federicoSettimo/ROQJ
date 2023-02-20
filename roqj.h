@@ -145,18 +145,9 @@ public:
 
 
 
-// ------------------------- Qubit ROQJ with 2 fixed post-jump states -------------------------
-class roqj_mixed {
+// ------------------------- ROQJ for mixed initial state -------------------------
+class roqj_mixed : public roqj{
 protected:
-  // Parameters of the roqj
-  int _N_states, _N_copies, _dim_Hilbert_space, _num_timesteps;
-  bool _verbose;
-  double _t_i, _t_f, _dt, _threshold;
-  VectorXd _observable, _sigma_observable;
-
-  // ROQJ
-  roqj _solver;
-
   // Ensemble
   vector<pair<double, VectorXcd>> _ensemble;
 
@@ -172,21 +163,15 @@ public:
   void set_ensemble (const vector<double> &probabilities, const vector<VectorXcd> &states);
   void set_ensemble ();
 
+  // Printing the ensemble
+  void print_ens ();
+
+  // Ad a state to the ensemble
+  void add_ensemble (const pair<double, VectorXcd> &state);
+  void add_ensemble (double prob, const VectorXcd &state);
+
   // Runs the ROQJ for each state and takes the average state. Repeats it _N_copies time
   void run ();
-
-  // Runs one single iteration for each member of the ensebles, returns the observable for the average at each time
-  VectorXd run_single_iteration ();
-
-  // Returns the values of the observable
-  VectorXd get_observable () const;
-  // Prints the values of the observable in file_out
-  VectorXd get_observable (string file_out) const;
-
-  // Returns the errors of the observable
-  VectorXd get_error_observable () const;
-  // Prints the errors of the observable in file_out
-  VectorXd get_error_observable (string file_out) const;
 
   // Returns the exact value for the observable
   VectorXd get_exact_sol (string file_out = "");

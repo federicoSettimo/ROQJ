@@ -154,7 +154,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
   int n_observable = 0;
 
   // Allocating _N_states copies of the initial state
-  std::vector<VectorXcd> psi(_N_states);
+  std::vector<VectorXcd> psi;
   for (int i = 0; i <= _N_states; ++i)
     psi.push_back(_initial_state);
 
@@ -382,6 +382,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     if (verbose) traj << endl;
   }
   return observables;
+  return VectorXd::Zero(_num_timesteps);
 }
 
 
@@ -422,15 +423,7 @@ void qubit_roqj::run () {
 
 // ------------------------- ROQJ initially mixed -------------------------
 roqj_mixed::roqj_mixed (int N_states, double t_i, double t_f, double dt, int N_copies, int dim_Hilbert_space, bool verbose, double threshold) {
-  _N_states = N_states;
-  _t_i = t_i;
-  _t_f = t_f;
-  _dt = dt;
-  _num_timesteps = abs(_t_f-_t_i)/_dt;
-  _N_copies = N_copies;
-  _dim_Hilbert_space = dim_Hilbert_space;
-  _verbose = verbose;
-  _threshold = threshold;
+  initialize(N_states, t_i, t_f, dt, N_copies, dim_Hilbert_space, false, 0, verbose, threshold);
 }
 
 // Setting the ensemble
@@ -470,18 +463,57 @@ void roqj_mixed::set_ensemble () {
   _ensemble.push_back(pair<double, VectorXcd>(1., init_state));
 }
 
+void roqj_mixed::add_ensemble (const pair<double, VectorXcd> &state) {
+  pair<double, VectorXcd> ens(state);
+  if (ens.first == 0.) return;
+  if (ens.first < 0.) ens.first = -ens.first;
+  _ensemble.push_back(ens);
+
+  double normalization = 0.;
+  for (auto & i : _ensemble)
+    normalization += i.first;
+  if (normalization != 1.) {
+    for (auto & i : _ensemble)
+      i.first /= normalization;
+  }
+}
+
+void roqj_mixed::add_ensemble (double prob, const VectorXcd &state) {
+  add_ensemble(pair<double, VectorXcd>(prob, state));
+}
+
 // Runs the ROQJ for each state and takes the average state. Repeats it _N_copies time
 void roqj_mixed::run () {
-  _solver.initialize(_N_states, _t_i, _t_f, _dt, 1, _dim_Hilbert_space, false, 0, false, _threshold);
-  if (_verbose)
-    _solver.print_info();
+  if (_verbose) {
+    print_info();
+    print_ens();
+  }
+
+  ofstream params;
+  params.open("params.txt");
+  params << _N_copies << endl << _N_states << endl << _t_i << endl << _t_f << endl << _dt << endl << false << endl << 0 << endl << _dim_Hilbert_space;
+  params.close();
+
   MatrixXd matrix_observables = MatrixXd::Zero(_num_timesteps, _N_copies);
+  // Cycle on the copies
   for (int i = 0; i < _N_copies; ++i) {
     if (_verbose)
       cout << "Running copy " << i+1 << "/" << _N_copies << "...\n";
-    VectorXd this_obs = run_single_iteration();
+    
+    // Cycle on the ensemble members'
+    VectorXd obs = VectorXd::Zero(_num_timesteps);
+    int n = 1;
+    for (auto & elem : _ensemble) {
+      set_initial_state(elem.second);
+      if (_verbose)
+        cout << "\tEnsemble member " << n++ << "/" << _ensemble.size() << "...\n";
+      obs += elem.first * run_single_iterations(false);
+      //obs = elem.first * run_single_iterations(false);
+    }
+    if (_verbose) cout << endl;
+
     for (int j = 0; j < _num_timesteps; ++j)
-      matrix_observables(j,i) = this_obs(j);
+      matrix_observables(j,i) = obs(j);
   }
 
   for (int i = 0; i < _num_timesteps; ++i) {
@@ -490,60 +522,39 @@ void roqj_mixed::run () {
   }
 }
 
-// Runs one single iteration for each member of the ensebles, returns the observable for the average at each time
-VectorXd roqj_mixed::run_single_iteration () {
-  VectorXd obs;
-  int i = 1;
-  for (auto & elem : _ensemble) {
-    _solver.set_initial_state(elem.second);
-    if (_verbose)
-      cout << "\tEnsemble member " << ++i << "/" << _ensemble.size() << "...\n";
-    obs += elem.first * _solver.run_single_iterations(false);
+
+VectorXd roqj_mixed::get_exact_sol (string file_out) {
+  ofstream out;
+  bool verbose = file_out != "";
+  if (verbose)
+    out.open(file_out);
+
+  MatrixXcd rho = MatrixXcd::Zero(_dim_Hilbert_space, _dim_Hilbert_space);
+  for (auto & elem : _ensemble)
+    rho += elem.first*projector(elem.second);
+
+  VectorXd obs = VectorXd(_num_timesteps);
+  int n = 0;
+
+  for (double t = _t_i; t <= _t_f; t += _dt) {
+    double this_obs = observable(rho);
+    if (verbose)
+      out << this_obs << endl;
+    obs[n] = this_obs;
+    n++;
+    rho = rho + (-I*comm(H(t),rho) + J(rho,t) - 0.5*anticomm(Gamma(t),rho))*_dt;
   }
+
   return obs;
 }
 
-VectorXd roqj_mixed::get_observable () const {return _observable;}
-VectorXd roqj_mixed::get_error_observable () const {return _sigma_observable;}
-
-VectorXd roqj_mixed::get_observable (string file_out) const {
-  ofstream out;
-  out.open(file_out);
-  for (int i = 0; i < _num_timesteps; ++i)
-    out << _observable[i] << endl;
-  return _observable;
-}
-
-VectorXd roqj_mixed::get_error_observable (string file_out) const {
-  ofstream out;
-  out.open(file_out);
-  for (int i = 0; i < _num_timesteps; ++i)
-    out << _sigma_observable[i] << endl;
-  return _sigma_observable;
-}
-
-
-  VectorXd roqj_mixed::get_exact_sol (string file_out) {
-    ofstream out;
-    bool verbose = file_out != "";
-    if (verbose)
-      out.open(file_out);
-
-    MatrixXcd rho = MatrixXcd::Zero(_dim_Hilbert_space, _dim_Hilbert_space);
-    for (auto & elem : _ensemble)
-      rho += elem.first*elem.second;
-
-    VectorXd obs = VectorXd(_num_timesteps);
-    int n = 0;
-
-    for (double t = _t_i; t <= _t_f; t += _dt) {
-      double this_obs = observable(rho);
-      if (verbose)
-        out << this_obs << endl;
-      obs[n] = this_obs;
-      n++;
-      rho = rho + (-I*comm(H(t),rho) + J(rho,t) - 0.5*anticomm(Gamma(t),rho))*_dt;
-    }
-
-    return obs;
+void roqj_mixed::print_ens () {
+  cout << "Ensemble:\n";
+  cout << "\tState\t| Probability\n";
+  for (auto & elem : _ensemble) {
+    cout << "----------------|----------------\n";
+    cout << elem.second << "\t| " << elem.first << endl;
   }
+  cout << endl;
+  return;
+}
