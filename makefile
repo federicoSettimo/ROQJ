@@ -20,7 +20,7 @@ ph_cov_nonP: roqj.o Examples/ph_cov_nonP.cpp
 ensemble: roqj.o Examples/ensemble.cpp
 	g++ Examples/ensemble.cpp roqj.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ensemble.x
-	python3 Examples/plot.py "Phase covariant, using an initial ensemble" "$$\rho_{01}(t)$$" roqj_ensemble.png
+	python3 Examples/plot.py "Phase covariant, using an initial ensemble" "$$\rho_{01}(t)$$" #roqj_ensemble.png
 
 ph_cov_no_plot: roqj.o Examples/ph_cov.cpp
 	g++ Examples/ph_cov.cpp roqj.o -o Examples/ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
