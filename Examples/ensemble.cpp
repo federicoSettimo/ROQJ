@@ -1,4 +1,4 @@
-#include "../roqj.h"
+#include "../roqj_mixed.h"
 
 using namespace std;
 using namespace Eigen;

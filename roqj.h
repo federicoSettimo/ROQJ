@@ -15,7 +15,6 @@
 #include <Eigen/Eigenvalues>
 #include <complex>
 #include <vector>
-#include <utility>
 #include <cstring>
 #include <fstream>
 #include <ctime>
@@ -84,7 +83,7 @@ public:
   void set_time (double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default);
   void set_dim_Hilbert_space (int dim_Hilbert_space = dim_Hilbert_space_default);
   void set_N_traj_print (int N_traj_print = N_traj_print_default);
-  void set_print_traj (bool print = true);
+  void set_print_traj (bool print = true, int N_traj_print = N_traj_print_default);
   void set_verbose (bool verbose = true);
   void set_threshold (double threshold = threshold_default);
 
@@ -139,42 +138,6 @@ public:
 
   // Single iteration with the 2-channel jumps
   VectorXd run_single_iterations (bool verbose = true) const;
-};
-
-
-
-
-
-// ------------------------- ROQJ for mixed initial state -------------------------
-class roqj_mixed : public roqj{
-protected:
-  // Ensemble
-  vector<pair<double, VectorXcd>> _ensemble;
-
-public:
-  /* 
-    Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (int) dim Hilbert space, (bool) verbose, (double) threshold for negativity
-    Default values: N_states = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, dim_Hilbert_space = 2, verbose = true, threshold = 1e-20
-  */
-  roqj_mixed (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, int dim_Hilbert_space = dim_Hilbert_space_default, bool verbose = true, double threshold = threshold_default);
-
-  // Setting the ensemble
-  void set_ensemble (const vector<pair<double, VectorXcd>> &ensemble);
-  void set_ensemble (const vector<double> &probabilities, const vector<VectorXcd> &states);
-  void set_ensemble ();
-
-  // Printing the ensemble
-  void print_ens ();
-
-  // Ad a state to the ensemble
-  void add_ensemble (const pair<double, VectorXcd> &state);
-  void add_ensemble (double prob, const VectorXcd &state);
-
-  // Runs the ROQJ for each state and takes the average state. Repeats it _N_copies time
-  void run ();
-
-  // Returns the exact value for the observable
-  VectorXd get_exact_sol (string file_out = "");
 };
 
 

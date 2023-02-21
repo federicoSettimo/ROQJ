@@ -1,7 +1,6 @@
 roqj.o: roqj.h roqj.cpp
 	g++ roqj.cpp -c -o roqj.o -std=c++20 -O3 -ffast-math -fno-math-errno
 
-
 ph_cov: roqj.o Examples/ph_cov.cpp
 	g++ Examples/ph_cov.cpp roqj.o -o Examples/ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov.x
@@ -17,8 +16,8 @@ ph_cov_nonP: roqj.o Examples/ph_cov_nonP.cpp
 	./Examples/ph_cov_nonP.x
 	python3 Examples/plot.py "Phase covariant non P divisible, undriven" "$$\rho_{01}(t)$$" Ph_cov_nonP.png
 
-ensemble: roqj.o Examples/ensemble.cpp
-	g++ Examples/ensemble.cpp roqj.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
+ensemble: roqj.o roqj_mixed.o Examples/ensemble.cpp
+	g++ Examples/ensemble.cpp roqj.o roqj_mixed.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ensemble.x
 	python3 Examples/plot.py "Phase covariant, using an initial ensemble" "$$\rho_{01}(t)$$" #roqj_ensemble.png
 
@@ -45,11 +44,14 @@ no_jump: Examples/no_jump.cpp
 	./Examples/no_jump.x
 	python3 Examples/plot_noJumps.py
 
-roqj_populations.o: roqj_populations.cpp roqj_populations.h
-	g++ roqj_populations.cpp -c -o roqj_populations.o -std=c++20 -O3 -ffast-math -fno-math-errno
+roqj_pop.o: roqj_pop.cpp roqj_pop.h
+	g++ roqj_pop.cpp -c -o roqj_pop.o -std=c++20 -O3 -ffast-math -fno-math-errno
 
-ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_populations.o
-	g++ Examples/ph_cov_pop.cpp roqj.o roqj_populations.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
+roqj_mixed.o: roqj_mixed.h roqj_mixed.cpp
+	g++ roqj_mixed.cpp -c -o roqj_mixed.o -std=c++20 -O3 -ffast-math -fno-math-errno
+
+ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_pop.o
+	g++ Examples/ph_cov_pop.cpp roqj.o roqj_pop.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_pop.x
 	python3 Examples/plot.py "Phase covariant, using effective populations" "$$ tr[\rho(t)\sigma_{z}]$$" #Ph_cov_pop.png
 
