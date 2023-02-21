@@ -12,7 +12,7 @@
 extern const int N_ensemble_default, N_copies_default, dim_Hilbert_space_default, N_traj_print_default;
 extern const double t_i_default, t_f_default, dt_default, threshold_default;
 
-// ------------------------- Qubit ROQJ class -------------------------
+// ------------------------- Qubit ROQJ pop class -------------------------
 class qubit_roqj_pop : public qubit_roqj {
 protected:
   Vector2cd _eig_1, _eig_2;

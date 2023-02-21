@@ -1,4 +1,4 @@
-#include "roqj_populations.h"
+#include "roqj_pop.h"
 
 qubit_roqj_pop::qubit_roqj_pop (int N_ensemble, double t_i, double t_f, double dt, int N_copies, bool verbose) {
   srand(time(NULL));
@@ -9,8 +9,7 @@ qubit_roqj_pop::qubit_roqj_pop (int N_ensemble, double t_i, double t_f, double d
   MatrixXcd eigvec = eigs.eigenvectors();
   _eig_1 = eigvec.col(0);
   _eig_2 = eigvec.col(1);
-  //_eig_1 << 1,0;
-  //_eig_2 << 0,1;
+  
   // check that both are not nan
   if (__isnan(real(_eig_2(0))) || __isnan(real(-_eig_2(0)))) {
     if (_eig_1(0) != zero)
@@ -24,7 +23,8 @@ qubit_roqj_pop::qubit_roqj_pop (int N_ensemble, double t_i, double t_f, double d
     else _eig_1 << 1, -conj(_eig_2(0))/conj(_eig_2(1));
     _eig_1 = _eig_1.normalized();
   }
-  cout << _eig_1 << endl << _eig_2 << endl;
+  if (_verbose)
+    cout << "Post-jump states:\n" << _eig_1 << endl << _eig_2 << endl;
 }
 
 void qubit_roqj_pop::run () {
