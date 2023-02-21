@@ -10,7 +10,7 @@ ph_cov: roqj.o Examples/ph_cov.cpp
 ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 	g++ Examples/ph_cov_x.cpp roqj.o -o Examples/ph_cov_x.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_x.x
-	python3 Examples/plot.py "Phase covariant, eigenstates of $$\sigma_{x}$$" "$$ tr[\rho(t)\sigma_{x}]$$" Ph_cov_x.png
+	python3 Examples/plot.py "Phase covariant, eigenstates of $$\sigma_{x}$$" "$$ tr[\rho(t)\sigma_{x}]$$" #Ph_cov_x.png
 
 ph_cov_nonP: roqj.o Examples/ph_cov_nonP.cpp
 	g++ Examples/ph_cov_nonP.cpp roqj.o -o Examples/ph_cov_nonP.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -45,6 +45,14 @@ no_jump: Examples/no_jump.cpp
 	./Examples/no_jump.x
 	python3 Examples/plot_noJumps.py
 
+roqj_populations.o: roqj_populations.cpp roqj_populations.h
+	g++ roqj_populations.cpp -c -o roqj_populations.o -std=c++20 -O3 -ffast-math -fno-math-errno
+
+ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_populations.o
+	g++ Examples/ph_cov_pop.cpp roqj.o roqj_populations.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_pop.x
+	python3 Examples/plot.py "Phase covariant, using effective populations" "$$ tr[\rho(t)\sigma_{z}]$$" #Ph_cov_pop.png
+
 roqj_arma.o: roqj_arma.h roqj_arma.cpp
 	g++ roqj_arma.cpp -c -o roqj_arma.o -O2 -std=c++20 -I /Users/federico/armadillo-11.4.3/include/ -DARMA_DONT_USE_WRAPPER
 
@@ -57,4 +65,4 @@ clean:
 	rm -f *.txt *.o *.x Examples/*.txt Examples/*.o Examples/*.x
 
 clean_output:
-	rm -f analytic.txt average.txt error.txt params.txt trajectories.txt
+	rm -f *.txt

@@ -202,7 +202,7 @@ MatrixXcd BlochToMatrix (double x, double y, double z);
 
 
 // ------------------------- PAULI MATRICES -------------------------
-static complex<double> I(0,1), one(1,0);
+static complex<double> I(0,1), one(1,0), zero(0,0);
 static Eigen::MatrixXcd sigma_x {{0,1},{1,0}};
 static Eigen::MatrixXcd sigma_y {{0,-I},{I,0}};
 static Eigen::MatrixXcd sigma_z {{1,0},{0,-1}};
