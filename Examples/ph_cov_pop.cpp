@@ -1,5 +1,4 @@
-#include "../roqj.h"
-#include "../roqj_populations.h"
+#include "../roqj_pop.h"
 
 using namespace std;
 using namespace Eigen;
