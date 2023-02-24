@@ -11,7 +11,7 @@ qubit_roqj_pop::qubit_roqj_pop (int N_states, double t_i, double t_f, double dt,
   _eig_2 = eigvec.col(1);
   
   // check that both are not nan
-  if (__isnan(real(_eig_2(0))) || __isnan(real(-_eig_2(0)))) {
+  if (isnan(real(_eig_2(0))) || isnan(real(-_eig_2(0)))) {
     if (_eig_1(0) != zero)
       _eig_2 << -conj(_eig_1(1))/conj(_eig_1(0)), 1;
     else _eig_2 << 1, -conj(_eig_1(0))/conj(_eig_1(1));
@@ -49,10 +49,6 @@ void qubit_roqj_pop::run () {
     _observable[i] = matrix_observables.row(i).mean();
     _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
-
-  get_observable("average.txt");
-  get_error_observable("error.txt");
-  get_trajectories();
 }
 
 VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
@@ -331,11 +327,6 @@ void qubit_roqj_pop_mixed::run () {
     _observable[i] = matrix_observables.row(i).mean();
     _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
-
-  get_exact_sol("analytic.txt");
-  get_observable("average.txt");
-  get_error_observable("error.txt");
-  get_trajectories();
 }
 
 
