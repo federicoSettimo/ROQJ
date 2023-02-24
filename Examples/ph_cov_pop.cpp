@@ -43,16 +43,13 @@ int main () {
   int N_ensemble = 100000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  qubit_roqj_pop jump(N_ensemble, tmin, tmax, dt, 3, true);
+  qubit_roqj_pop jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
   jump.set_initial_state(initialState);
 
   jump.run();
-
-  jump.get_observable("average.txt");
-  jump.get_error_observable("error.txt");
 
   return 0;
 }

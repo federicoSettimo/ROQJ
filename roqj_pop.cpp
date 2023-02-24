@@ -1,8 +1,8 @@
 #include "roqj_pop.h"
 // ------------------------------------- qubit_roqj_pop -------------------------------------
-qubit_roqj_pop::qubit_roqj_pop (int N_states, double t_i, double t_f, double dt, int N_copies, bool verbose, double threshold) {
+qubit_roqj_pop::qubit_roqj_pop (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
   srand(time(NULL));
-  initialize(N_states, t_i, t_f, dt, N_copies, 2, false, 0, verbose, threshold);
+  initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose, threshold);
   ComplexEigenSolver<MatrixXcd> eigs;
   MatrixXcd R = J(projector(_initial_state),0.5*(_t_f-_t_i)) + 0.5*(C(projector(_initial_state), 0.5*(_t_f-_t_i))*projector(_initial_state) + projector(_initial_state)*C(projector(_initial_state), 0.5*(_t_f-_t_i)).transpose());
   eigs.compute(R);
@@ -49,6 +49,10 @@ void qubit_roqj_pop::run () {
     _observable[i] = matrix_observables.row(i).mean();
     _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
+
+  get_observable("average.txt");
+  get_error_observable("error.txt");
+  get_trajectories();
 }
 
 VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
@@ -182,6 +186,42 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
 }
 
 
+// Prints the trajectories
+void qubit_roqj_pop::get_trajectories (string file_out) {
+  if (!_print_trajectory || _N_traj_print <= 0 || file_out == "")
+    return;
+  if (_verbose)
+    cout << "Printing " << _N_traj_print << " trajectories\n";
+  
+  ofstream out;
+  out.open(file_out);
+
+  std::vector<VectorXcd> psi;
+  for (int i = 0; i < _N_traj_print; ++i)
+    psi.push_back(_initial_state);
+
+  // Time evolution
+  for (double t = _t_i; t <= _t_f; t += _dt) {
+    for (int i = 0; i < _N_traj_print; ++i) {
+      out << observable(projector(psi[i])) << " ";
+
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
+      
+      // Draws a random number and calculates whether the evolution is deterministic or via a jump
+      double z = (double)rand()/((double)RAND_MAX);
+
+      if (z < real(R.trace())*_dt) // Jump
+        psi[i] = this->jump(R,z);
+      else {// Free evolution
+        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
+        psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
+      }
+      psi[i] = psi[i].normalized();
+    }
+    out << endl;
+  }
+}
+
 
 
 
@@ -193,14 +233,8 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
 
 
 // ------------------------------------- qubit_roqj_pop_mixed -------------------------------------
-qubit_roqj_pop_mixed::qubit_roqj_pop_mixed (int N_states, double t_i, double t_f, double dt, int N_copies, bool verbose, double threshold) {
-  _N_states = N_states;
-  _t_i = t_i;
-  _t_f = t_f;
-  _dt = dt;
-  _N_copies = N_copies;
-  _verbose = verbose;
-  _threshold = threshold;
+qubit_roqj_pop_mixed::qubit_roqj_pop_mixed (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
+  initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose, threshold);
 }
 
 // Setting the ensemble
@@ -269,7 +303,7 @@ void qubit_roqj_pop_mixed::run () {
 
   ofstream params;
   params.open("params.txt");
-  params << _N_copies << endl << _N_states << endl << _t_i << endl << _t_f << endl << _dt << endl << false << endl << 0 << endl << _dim_Hilbert_space;
+  params << _N_copies << endl << _N_states << endl << _t_i << endl << _t_f << endl << _dt << endl << _print_trajectory << endl << _N_copies*_N_traj_print << endl << _dim_Hilbert_space;
   params.close();
 
   MatrixXd matrix_observables = MatrixXd::Zero(_num_timesteps, _N_copies);
@@ -297,6 +331,11 @@ void qubit_roqj_pop_mixed::run () {
     _observable[i] = matrix_observables.row(i).mean();
     _sigma_observable[i] = sqrt((matrix_observables.row(i).array() - _observable[i]).square().sum() / (matrix_observables.row(i).size() - 1));
   }
+
+  get_exact_sol("analytic.txt");
+  get_observable("average.txt");
+  get_error_observable("error.txt");
+  get_trajectories();
 }
 
 
@@ -334,4 +373,44 @@ void qubit_roqj_pop_mixed::print_ens () {
   }
   cout << endl;
   return;
+}
+
+void qubit_roqj_pop_mixed::get_trajectories (string file_out) {
+  if (!_print_trajectory || _N_traj_print <= 0 || file_out == "")
+    return;
+  if (_verbose)
+    cout << "Printing " << _N_traj_print << " trajectories\n";
+  
+  ofstream out;
+  out.open(file_out);
+
+  std::vector<VectorXcd> psi;
+  for (int j = 0; j < _ensemble.size(); ++j) {
+    for (int i = 0; i < _N_traj_print; ++i)
+      psi.push_back(_ensemble[j].second);
+  }
+
+  // Time evolution
+  for (double t = _t_i; t <= _t_f; t += _dt) {
+    for (int j = 0; j < _ensemble.size(); ++j) {
+      for (int i = 0; i < _N_traj_print; ++i) {
+        int k = i + j*_N_traj_print;
+        out << observable(projector(psi[k])) << " ";
+
+        MatrixXcd R = J(projector(psi[k]),t) + 0.5*(C(projector(psi[k]), t)*projector(psi[k]) + projector(psi[k])*C(projector(psi[k]), t).adjoint());
+        
+        // Draws a random number and calculates whether the evolution is deterministic or via a jump
+        double z = (double)rand()/((double)RAND_MAX);
+
+        if (z < real(R.trace())*_dt) // Jump
+          psi[k] = this->jump(R,z);
+        else {// Free evolution
+          MatrixXcd K = H(t) + 0.5*(C(projector(psi[k]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[k]), t).real() ) );
+          psi[k] -= K*psi[k]*complex<double>(0.,1.)*_dt;
+        }
+        psi[k] = psi[k].normalized();
+      }
+    }
+    out << endl;
+  }
 }
