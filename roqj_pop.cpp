@@ -122,14 +122,6 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       lambda_2_eig_2 = tmp;
     }
 
-    // Prints the eigenvalue at the non-P div times
-    if ((lambda_1_init < 0 || lambda_2_init < 0 || lambda_1_eig_1 < 0 || lambda_2_eig_1 < 0 || lambda_1_eig_2 < 0 || lambda_2_eig_2 < 0) && _verbose) {
-      cout << "Time : " << t << endl;
-      cout << "Initial state: " << lambda_1_init << ", " << lambda_2_init << endl;
-      cout << "Eig_1: " << lambda_1_eig_1 << ", " << lambda_2_eig_1 << endl;
-      cout << "Eig_2: " << lambda_1_eig_2 << ", " << lambda_2_eig_2 << endl << endl;
-    }
-
     // Cycle in the members in initial_state
     for (int i = 0; i < N_init_old; ++i) {
       double z = (double)rand()/((double)RAND_MAX);
@@ -149,11 +141,11 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       }
       else if (lambda_1_init < 0 && z <= -lambda_1_init*(double)N_init/((double)N_1) + lambda_2_eig_1) {
         N_init++; N_1--;
-        cout << "Reverse jump from eig_1 to initial_state at time " << t << endl;
+        cout << "\tReverse jump from eig_1 to initial_state at time " << t << endl;
       }
       else if (lambda_1_eig_2 < 0 && z >= 1. + lambda_1_eig_2*(double)N_2/((double)N_1)) {
         N_2++; N_1--;
-        cout << "Reverse jump from eig_1 to eig_2 at time " << t << endl;
+        cout << "\tReverse jump from eig_1 to eig_2 at time " << t << endl;
       }
     }
 
@@ -165,11 +157,11 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       }
       else if (lambda_2_init < 0 && z <= -lambda_2_init*(double)N_init/((double)N_2) + lambda_1_eig_2) {
         N_init++; N_2--;
-        cout << "Reverse jump from eig_2 to initial_state at time " << t << endl;
+        cout << "\tReverse jump from eig_2 to initial_state at time " << t << endl;
       }
       else if (lambda_2_eig_1 < 0 && z >= 1. + lambda_2_eig_1*(double)N_2/((double)N_1)) {
         N_1++; N_2--;
-        cout << "Reverse jump from eig_2 to eig_1 at time " << t << endl;
+        cout << "\tReverse jump from eig_2 to eig_1 at time " << t << endl;
       }
     }
 
@@ -177,6 +169,7 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
     initial_state_t -= I*_dt*K*initial_state_t;
     initial_state_t = initial_state_t.normalized();
   }
+  cout << endl;
   return observables;
 }
 
@@ -195,25 +188,99 @@ void qubit_roqj_pop::get_trajectories (string file_out) {
   for (int i = 0; i < _N_traj_print; ++i)
     psi.push_back(_initial_state);
 
+  int N_init = _N_traj_print, N_1 = 0, N_2 = 0;
+
+  Vector2cd initial_state_t = _initial_state, initial_state_t_dt;
+
   // Time evolution
   for (double t = _t_i; t <= _t_f; t += _dt) {
+    // Let's compute all the eigenvalues
+    MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).transpose());
+    ComplexEigenSolver<MatrixXcd> eigs;
+    eigs.compute(R);
+    Vector2cd eigval = eigs.eigenvalues();
+    double lambda_1_init = real(eigval[0])*_dt, lambda_2_init = real(eigval[1])*_dt;
+    MatrixXcd eigvec = eigs.eigenvectors();
+    // Lets see if the first eigenvalue is actually _eig_1 or it is eig_2. If eig_2, swap
+    if (eigvec.col(0) == _eig_2) {
+      double tmp = lambda_1_init;
+      lambda_1_init = lambda_2_init;
+      lambda_2_init = tmp;
+    }
+
+    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).transpose());
+    eigs.compute(R);
+    eigval = eigs.eigenvalues();
+    double lambda_1_eig_1 = real(eigval[0])*_dt, lambda_2_eig_1 = real(eigval[1])*_dt;
+    eigvec = eigs.eigenvectors();
+    if (eigvec.col(0) == _eig_2) {
+      double tmp = lambda_1_eig_1;
+      lambda_1_eig_1 = lambda_2_eig_1;
+      lambda_2_eig_1 = tmp;
+    }
+
+    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).transpose());
+    eigs.compute(R);
+    eigval = eigs.eigenvalues();
+    double lambda_1_eig_2 = real(eigval[0])*_dt, lambda_2_eig_2 = real(eigval[1])*_dt;
+    eigvec = eigs.eigenvectors();
+    if (eigvec.col(0) == _eig_2) {
+      double tmp = lambda_1_eig_2;
+      lambda_1_eig_2 = lambda_2_eig_2;
+      lambda_2_eig_2 = tmp;
+    }
+
+    MatrixXcd K = H(t) + 0.5*(C(projector(initial_state_t), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(initial_state_t), t).real() ) );
+    initial_state_t_dt = initial_state_t - I*_dt*K*initial_state_t;
+    initial_state_t_dt = initial_state_t_dt.normalized();
+
     for (int i = 0; i < _N_traj_print; ++i) {
       out << observable(projector(psi[i])) << " ";
-
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(R.trace())*_dt) // Jump
-        psi[i] = this->jump(R,z);
-      else {// Free evolution
-        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
-        psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
+      if (psi[i] == initial_state_t) {
+        if (lambda_1_init > 0 && z <= lambda_1_init) {
+          N_init--; N_1++; psi[i] = _eig_1;
+        }
+        else if (lambda_2_init > 0 && z <= lambda_1_init + lambda_2_init) {
+          N_init--; N_2++; psi[i] = _eig_2;
+        }
+        else {
+          psi[i] -= I*_dt*K*psi[i];
+          psi[i] = psi[i].normalized();
+        }
       }
-      psi[i] = psi[i].normalized();
+
+      else if (psi[i] == _eig_1) {
+        if (lambda_2_eig_1 > 0 && z <= lambda_2_eig_1) {
+          N_1--; N_2++; psi[i] = _eig_2;
+        }
+        else if (lambda_1_init < 0 && z <= -lambda_1_init*(double)N_init/((double)N_1) + lambda_2_eig_1) {
+          N_init++; N_1--; psi[i] = initial_state_t_dt;
+        }
+        else if (lambda_1_eig_2 < 0 && z >= 1. + lambda_1_eig_2*(double)N_2/((double)N_1)) {
+          N_2++; N_1--; psi[i] = _eig_2;
+        }
+      }
+
+      else if (psi[i] == _eig_2) {
+        if (lambda_1_eig_2 > 0 && z <= lambda_1_eig_2) {
+          N_2--; N_1++; psi[i] = _eig_1;
+        }
+        else if (lambda_2_init < 0 && z <= -lambda_2_init*(double)N_init/((double)N_2) + lambda_1_eig_2) {
+          N_init++; N_2--; psi[i] = initial_state_t_dt;
+        }
+        else if (lambda_2_eig_1 < 0 && z >= 1. + lambda_2_eig_1*(double)N_2/((double)N_1)) {
+          N_1++; N_2--; psi[i] = _eig_1;
+        }
+      }
+
     }
     out << endl;
+
+    initial_state_t = initial_state_t_dt;
   }
 }
 

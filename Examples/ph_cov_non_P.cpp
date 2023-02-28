@@ -36,9 +36,9 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
 
 int main () {
-  double tmin = 0., tmax = 10, dt = 0.01;
+  double tmin = 0., tmax = 5, dt = 0.01;
   int N_ensemble = 10000, Ncopies = 5, dimH = 2, Ntraj = 10;
-  bool printTraj = false;
+  bool printTraj = true;
 
   qubit_roqj_pop jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
 
@@ -50,6 +50,7 @@ int main () {
 
   jump.get_observable("average.txt");
   jump.get_error_observable("error.txt");
+  jump.get_trajectories();
 
   return 0;
 }
