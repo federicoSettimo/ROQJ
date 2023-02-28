@@ -86,94 +86,93 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
 
     int N_1_old = N_1, N_2_old = N_2, N_init_old = N_init;
 
-    // Cycle on the states in initial_state_t
+    // Let's compute all the eigenvalues
     MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).transpose());
     ComplexEigenSolver<MatrixXcd> eigs;
     eigs.compute(R);
     Vector2cd eigval = eigs.eigenvalues();
-    double lambda_1 = real(eigval[0])*_dt, lambda_2 = real(eigval[1])*_dt;
+    double lambda_1_init = real(eigval[0])*_dt, lambda_2_init = real(eigval[1])*_dt;
     MatrixXcd eigvec = eigs.eigenvectors();
     // Lets see if the first eigenvalue is actually _eig_1 or it is eig_2. If eig_2, swap
     if (eigvec.col(0) == _eig_2) {
-      double tmp = lambda_1;
-      lambda_1 = lambda_2;
-      lambda_2 = tmp;
+      double tmp = lambda_1_init;
+      lambda_1_init = lambda_2_init;
+      lambda_2_init = tmp;
     }
-    for (int i = 0; i < N_init; ++i) {
+
+    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).transpose());
+    eigs.compute(R);
+    eigval = eigs.eigenvalues();
+    double lambda_1_eig_1 = real(eigval[0])*_dt, lambda_2_eig_1 = real(eigval[1])*_dt;
+    eigvec = eigs.eigenvectors();
+    if (eigvec.col(0) == _eig_2) {
+      double tmp = lambda_1_eig_1;
+      lambda_1_eig_1 = lambda_2_eig_1;
+      lambda_2_eig_1 = tmp;
+    }
+
+    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).transpose());
+    eigs.compute(R);
+    eigval = eigs.eigenvalues();
+    double lambda_1_eig_2 = real(eigval[0])*_dt, lambda_2_eig_2 = real(eigval[1])*_dt;
+    eigvec = eigs.eigenvectors();
+    if (eigvec.col(0) == _eig_2) {
+      double tmp = lambda_1_eig_2;
+      lambda_1_eig_2 = lambda_2_eig_2;
+      lambda_2_eig_2 = tmp;
+    }
+
+    // Prints the eigenvalue at the non-P div times
+    if ((lambda_1_init < 0 || lambda_2_init < 0 || lambda_1_eig_1 < 0 || lambda_2_eig_1 < 0 || lambda_1_eig_2 < 0 || lambda_2_eig_2 < 0) && _verbose) {
+      cout << "Time : " << t << endl;
+      cout << "Initial state: " << lambda_1_init << ", " << lambda_2_init << endl;
+      cout << "Eig_1: " << lambda_1_eig_1 << ", " << lambda_2_eig_1 << endl;
+      cout << "Eig_2: " << lambda_1_eig_2 << ", " << lambda_2_eig_2 << endl << endl;
+    }
+
+    // Cycle in the members in initial_state
+    for (int i = 0; i < N_init_old; ++i) {
       double z = (double)rand()/((double)RAND_MAX);
-      if (z < lambda_1) {
+      if (lambda_1_init > 0 && z <= lambda_1_init) {
         N_init--; N_1++;
       }
-      else if (z < lambda_1 + lambda_2) {
+      else if (lambda_2_init > 0 && z <= lambda_1_init + lambda_2_init) {
         N_init--; N_2++;
       }
     }
 
-    // Cycle on the states in _eig_1
-    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).transpose());
-    eigs.compute(R);
-    eigval = eigs.eigenvalues();
-    lambda_1 = real(eigval[0])*_dt, lambda_2 = real(eigval[1])*_dt;
-    eigvec = eigs.eigenvectors();
-    // Lets see if the first eigenvalue is actually _eig_1 or it is eig_2. If eig_2, swap
-    if (eigvec.col(0) == _eig_2) {
-      double tmp = lambda_1;
-      lambda_1 = lambda_2;
-      lambda_2 = tmp;
-    }
+    // Cycle in the members in eig_1
     for (int i = 0; i < N_1_old; ++i) {
       double z = (double)rand()/((double)RAND_MAX);
-      if (lambda_1*lambda_2 >= 0) {
-        if (z < lambda_2) {
-          N_1--; N_2++;
-        }
+      if (lambda_2_eig_1 > 0 && z <= lambda_2_eig_1) {
+        N_1--; N_2++;
       }
-      else if (lambda_1 < 0) {
-        if (z <= -lambda_1*(double)N_init_old/((double)N_1_old)) {
-          cout << "Reverse jump from eig_1 to initial_state at time " << t << endl;
-          N_1--; N_init++;
-        }
+      else if (lambda_1_init < 0 && z <= -lambda_1_init*(double)N_init/((double)N_1) + lambda_2_eig_1) {
+        N_init++; N_1--;
+        cout << "Reverse jump from eig_1 to initial_state at time " << t << endl;
       }
-      else if (lambda_2 < 0) {
-        if (z <= -lambda_2*(double)N_2_old/((double)N_1_old)) {
-          cout << "Reverse jump from eig_1 to eig_2 at time " << t << endl;
-          N_1--; N_2++;
-        }
+      else if (lambda_1_eig_2 < 0 && z >= 1. + lambda_1_eig_2*(double)N_2/((double)N_1)) {
+        N_2++; N_1--;
+        cout << "Reverse jump from eig_1 to eig_2 at time " << t << endl;
       }
     }
 
-    // Cycle on the states in _eig_2
-    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).transpose());
-    eigs.compute(R);
-    eigval = eigs.eigenvalues();
-    lambda_1 = real(eigval[0])*_dt, lambda_2 = real(eigval[1])*_dt;
-    eigvec = eigs.eigenvectors();
-    // Lets see if the first eigenvalue is actually _eig_1 or it is eig_2. If eig_2, swap
-    if (eigvec.col(0) == _eig_2) {
-      double tmp = lambda_1;
-      lambda_1 = lambda_2;
-      lambda_2 = tmp;
-    }
+    // Cycle in the members in eig_2
     for (int i = 0; i < N_2_old; ++i) {
       double z = (double)rand()/((double)RAND_MAX);
-      if (lambda_1*lambda_2 >= 0) {
-        if (z <= lambda_1) {
-          N_2--; N_1++;
-        }
+      if (lambda_1_eig_2 > 0 && z <= lambda_1_eig_2) {
+        N_2--; N_1++;
       }
-      else if (lambda_2 < 0) {
-        if (z <= -lambda_2*(double)N_init_old/((double)N_2_old)) {
-          cout << "Reverse jump from eig_2 to initial_state at time " << t << endl;
-          N_2--; N_init++;
-        }
+      else if (lambda_2_init < 0 && z <= -lambda_2_init*(double)N_init/((double)N_2) + lambda_1_eig_2) {
+        N_init++; N_2--;
+        cout << "Reverse jump from eig_2 to initial_state at time " << t << endl;
       }
-      else if (lambda_1 < 0) {
-        if (z <= -lambda_1*(double)N_1_old/((double)N_2_old)) {
-          cout << "Reverse jump from eig_2 to eig_1 at time " << t << endl;
-          N_2--; N_1++;
-        }
+      else if (lambda_2_eig_1 < 0 && z >= 1. + lambda_2_eig_1*(double)N_2/((double)N_1)) {
+        N_1++; N_2--;
+        cout << "Reverse jump from eig_2 to eig_1 at time " << t << endl;
       }
     }
+
     MatrixXcd K = H(t) + 0.5*(C(projector(initial_state_t), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(initial_state_t), t).real() ) );
     initial_state_t -= I*_dt*K*initial_state_t;
     initial_state_t = initial_state_t.normalized();
