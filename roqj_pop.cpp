@@ -141,11 +141,13 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       }
       else if (lambda_1_init < 0 && z <= -lambda_1_init*(double)N_init/((double)N_1) + lambda_2_eig_1) {
         N_init++; N_1--;
-        cout << "\tReverse jump from eig_1 to initial_state at time " << t << endl;
+        if (_verbose)
+          cout << "\tReverse jump from eig_1 to initial_state at time " << t << endl;
       }
       else if (lambda_1_eig_2 < 0 && z >= 1. + lambda_1_eig_2*(double)N_2/((double)N_1)) {
         N_2++; N_1--;
-        cout << "\tReverse jump from eig_1 to eig_2 at time " << t << endl;
+        if (_verbose)
+          cout << "\tReverse jump from eig_1 to eig_2 at time " << t << endl;
       }
     }
 
@@ -157,11 +159,13 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       }
       else if (lambda_2_init < 0 && z <= -lambda_2_init*(double)N_init/((double)N_2) + lambda_1_eig_2) {
         N_init++; N_2--;
-        cout << "\tReverse jump from eig_2 to initial_state at time " << t << endl;
+        if (_verbose)
+          cout << "\tReverse jump from eig_2 to initial_state at time " << t << endl;
       }
       else if (lambda_2_eig_1 < 0 && z >= 1. + lambda_2_eig_1*(double)N_2/((double)N_1)) {
         N_1++; N_2--;
-        cout << "\tReverse jump from eig_2 to eig_1 at time " << t << endl;
+        if (_verbose)
+            cout << "\tReverse jump from eig_2 to eig_1 at time " << t << endl;
       }
     }
 

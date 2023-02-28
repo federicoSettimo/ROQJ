@@ -134,10 +134,10 @@ double roqj::get_t_f () const {return _t_f;}
 double roqj::get_dt () const {return _dt;}
 double roqj::get_threshold () const {return _threshold;}
 VectorXcd roqj::get_initial_state () const {return _initial_state;}
-VectorXd roqj::get_observable () const {return _observable;}
-VectorXd roqj::get_error_observable () const {return _sigma_observable;}
 
 VectorXd roqj::get_observable (string file_out) const {
+  if (file_out == "")
+    return _observable;
   ofstream out;
   out.open(file_out);
   for (int i = 0; i < _num_timesteps; ++i)
@@ -146,6 +146,8 @@ VectorXd roqj::get_observable (string file_out) const {
 }
 
 VectorXd roqj::get_error_observable (string file_out) const {
+  if (file_out == "")
+    return _sigma_observable;
   ofstream out;
   out.open(file_out);
   for (int i = 0; i < _num_timesteps; ++i)

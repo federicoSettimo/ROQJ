@@ -99,15 +99,11 @@ public:
   double get_threshold () const;
   VectorXcd get_initial_state () const;
   
-  // Returns the values of the observable
-  VectorXd get_observable () const;
   // Prints the values of the observable in file_out
-  VectorXd get_observable (string file_out) const;
+  VectorXd get_observable (string file_out = "average.txt") const;
 
-  // Returns the errors of the observable
-  VectorXd get_error_observable () const;
   // Prints the errors of the observable in file_out
-  VectorXd get_error_observable (string file_out) const;
+  VectorXd get_error_observable (string file_out = "error.txt") const;
 };
 
 
