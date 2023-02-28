@@ -6,7 +6,7 @@ using namespace Eigen;
 
 double gamma_p (double t) {return exp(-.5*t);}
 double gamma_m (double t) {return exp(-.25*t);}
-double gamma_z (double t) {return 10.*0.5*exp(-3.*t/8.)*cos(2.*t);}
+double gamma_z (double t) {return 2.*0.5*exp(-3.*t/8.)*cos(2.*t);}
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
 
@@ -24,8 +24,8 @@ MatrixXcd Gamma (double t) {
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
   double mu, c3, a2 = real(rho(1,1));
-  //mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
-  mu = a2 == 1. ? -sqrt(gamma_p(t)*gamma_m(t)) : -gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t));
+  mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
+  //mu = a2 == 1. ? -sqrt(gamma_p(t)*gamma_m(t)) : -gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t));
   //if (a2 == 0.) mu = sqrt(gamma_p(t)*gamma_m(t));
   //else if (a2 == 1.) mu = -sqrt(gamma_p(t)*gamma_m(t));
   //else mu = .5*(gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t))) + .5*(-gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t)));
