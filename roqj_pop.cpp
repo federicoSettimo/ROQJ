@@ -1,7 +1,7 @@
 #include "roqj_pop.h"
 // ------------------------------------- qubit_roqj_pop -------------------------------------
 qubit_roqj_pop::qubit_roqj_pop (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
-  srand(time(NULL));
+  srand(0);
   initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose, threshold);
   ComplexEigenSolver<MatrixXcd> eigs;
   MatrixXcd R = J(projector(_initial_state),0.5*(_t_f-_t_i)) + 0.5*(C(projector(_initial_state), 0.5*(_t_f-_t_i))*projector(_initial_state) + projector(_initial_state)*C(projector(_initial_state), 0.5*(_t_f-_t_i)).transpose());
