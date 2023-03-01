@@ -156,6 +156,10 @@ MatrixXcd projector (const VectorXcd &psi);
 // Density operator from its Bloch VectorXdtor representation
 MatrixXcd BlochToMatrix (double x, double y, double z);
 
+// Partial trace over the qubit 1 and 2
+MatrixXcd tr_1(const MatrixXcd &rho);
+MatrixXcd tr_2(const MatrixXcd &rho);
+
 
 
 
