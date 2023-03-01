@@ -14,7 +14,6 @@ MatrixXcd BlochToMatrix (double x, double y, double z) {
   return .5*(id + x*sigma_x + y*sigma_y + z*sigma_z);
 }
 
-// Partial trace over the qubit 1 and 2
 MatrixXcd tr_1(const MatrixXcd &rho) {
 	MatrixXcd A;
   A = MatrixXd::Zero(2,2);
@@ -28,6 +27,19 @@ MatrixXcd tr_2(const MatrixXcd &rho) {
   A << rho(0,0) + rho(1,1), rho(0,2) + rho(1,3), rho(2,0) + rho(3,1), rho(2,2) + rho(3,3);
   return A;
 }
+
+MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B) {
+  MatrixXcd C;
+  C = MatrixXcd::Zero(4,4);
+  C.topLeftCorner(2,2) = A(0,0)*B;
+  C.topRightCorner(2,2) = A(0,1)*B;
+  C.bottomLeftCorner(2,2) = A(1,0)*B;
+  C.bottomRightCorner(2,2) = A(1,1)*B;
+  return C;
+}
+
+
+
 
 // ------------------------- METHODS DEFINITIONS -------------------------
 // ------------------------- ROQJ class -------------------------

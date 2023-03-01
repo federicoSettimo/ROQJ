@@ -157,8 +157,11 @@ MatrixXcd projector (const VectorXcd &psi);
 MatrixXcd BlochToMatrix (double x, double y, double z);
 
 // Partial trace over the qubit 1 and 2
-MatrixXcd tr_1(const MatrixXcd &rho);
-MatrixXcd tr_2(const MatrixXcd &rho);
+MatrixXcd tr_1 (const MatrixXcd &rho);
+MatrixXcd tr_2 (const MatrixXcd &rho);
+
+// Tensor product between two 2x2 matrices
+MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B);
 
 
 
