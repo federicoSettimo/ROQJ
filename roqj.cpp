@@ -39,6 +39,17 @@ MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B) {
 }
 
 
+VectorXcd tens_state (const Vector2cd &psi1, const Vector2cd &psi2) {
+  VectorXcd psi;
+  psi = VectorXcd::Zero(4);
+  psi(0) = psi1(0)*psi2(0);
+  psi(1) = psi1(0)*psi2(1);
+  psi(2) = psi1(1)*psi2(0);
+  psi(3) = psi1(1)*psi2(1);
+  return psi;
+}
+
+
 
 
 // ------------------------- METHODS DEFINITIONS -------------------------
@@ -146,7 +157,7 @@ void roqj::set_verbose (bool verbose) {_verbose = verbose;}
 void roqj::set_threshold (double threshold) {
   if (threshold < 0.)
     threshold = -threshold;
-  if (threshold > 0.1)
+  if (threshold > 1.)
     _threshold = threshold_default;
   else _threshold = threshold;
 }
@@ -224,7 +235,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*(C(projector(psi[i]), t).adjoint()));
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
@@ -284,6 +295,9 @@ VectorXcd roqj::jump (const MatrixXcd &R, double z) const {
   for (int j = 0; j < _dim_Hilbert_space; ++j) {
     if (real(eigval[j]) < -_threshold) {
       cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+      for (int i = 0; i < _dim_Hilbert_space; ++i) 
+        cout << real(eigval[i]) << ", ";
+      cout << endl;
       exit(EXIT_FAILURE);
     }
     // If z is in the j-th bin, it jumps to the j-th eigenstate

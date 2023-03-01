@@ -163,6 +163,9 @@ MatrixXcd tr_2 (const MatrixXcd &rho);
 // Tensor product between two 2x2 matrices
 MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B);
 
+// Tensor producto between two 2-dim vectors
+VectorXcd tens_state (const Vector2cd &psi1, const Vector2cd &psi2);
+
 
 
 
