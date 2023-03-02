@@ -252,8 +252,7 @@ void qubit_roqj_pop::get_trajectories (string file_out) {
           N_init--; N_2++; psi[i] = _eig_2;
         }
         else {
-          psi[i] -= I*_dt*K*psi[i];
-          psi[i] = psi[i].normalized();
+          psi[i] = initial_state_t_dt;
         }
       }
 
