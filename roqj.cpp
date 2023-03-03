@@ -15,15 +15,13 @@ MatrixXcd BlochToMatrix (double x, double y, double z) {
 }
 
 MatrixXcd tr_1(const MatrixXcd &rho) {
-	MatrixXcd A;
-  A = MatrixXd::Zero(2,2);
+	MatrixXcd A(2,2);
   A << rho(0,0) + rho(2,2), rho(0,1) + rho(2,3), rho(1,0) + rho(3,2), rho(1,1) + rho(3,3);
 	return A;
 }
 
 MatrixXcd tr_2(const MatrixXcd &rho) {
-	MatrixXcd A;
-  A = MatrixXd::Zero(2,2);
+	MatrixXcd A(2,2);
   A << rho(0,0) + rho(1,1), rho(0,2) + rho(1,3), rho(2,0) + rho(3,1), rho(2,2) + rho(3,3);
   return A;
 }
