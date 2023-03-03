@@ -26,7 +26,7 @@ using namespace Eigen;
 
 // Default values
 const int N_states_default = 10000, N_copies_default = 1, dim_Hilbert_space_default = 2, N_traj_print_default = 5;
-const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_default = 1.e-10;
+const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_default = 1.e-7;
 
 // External functions needed: H(t), J(rho, t), Gamma(t), C(t), observable(rho)
 extern MatrixXcd H (double t);
@@ -67,7 +67,7 @@ public:
 
 
   // Performs the jump process
-  VectorXcd jump (const MatrixXcd &R, double z) const;
+  VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi) const;
 
 
   // Displays the info on the runs
@@ -165,6 +165,9 @@ MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B);
 
 // Tensor producto between two 2-dim vectors
 VectorXcd tens_state (const Vector2cd &psi1, const Vector2cd &psi2);
+
+// Entropy for a qubit
+double entropy (const Matrix2cd &rho);
 
 
 

@@ -47,6 +47,13 @@ VectorXcd tens_state (const Vector2cd &psi1, const Vector2cd &psi2) {
   return psi;
 }
 
+double entropy (const Matrix2cd &rho) {
+  ComplexEigenSolver<Matrix2cd> eigs;
+  eigs.compute(rho);
+  double p = real(eigs.eigenvalues()(0));
+  return -p*log2(p) - (1.-p)*log2(1.-p);
+}
+
 
 
 
@@ -239,10 +246,15 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       double z = (double)rand()/((double)RAND_MAX);
 
       if (z < real(R.trace())*_dt) // Jump
-        psi[i] = this->jump(R,z);
+        psi[i] = this->jump(R,z,psi[i]);
       else {// Free evolution
         MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
+      }
+      psi[i] = psi[i].normalized();
+      for (int j = 0; j < _dim_Hilbert_space; ++j) {
+        if (abs(psi[i](j)) < _threshold && abs(psi[i](j)) > 0)
+          psi[i](j) = 0.;
       }
       psi[i] = psi[i].normalized();
     }
@@ -280,19 +292,19 @@ void roqj::run () {
   }
 }
 
-VectorXcd roqj::jump (const MatrixXcd &R, double z) const {
+VectorXcd roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi) const {
   ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(R);
   VectorXcd eigval = eigs.eigenvalues();
   MatrixXcd eigvec = eigs.eigenvectors();
-  //VectorXcd eigval;
-  //MatrixXcd eigvec;
 
   // Chose in which eigenvalue perform the jump
   double sum_previous_eigs = 0.;
   for (int j = 0; j < _dim_Hilbert_space; ++j) {
     if (real(eigval[j]) < -_threshold) {
       cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+      cout << "State: " << psi.transpose() << endl;
+      cout << "Eigenvalues: ";
       for (int i = 0; i < _dim_Hilbert_space; ++i) 
         cout << real(eigval[i]) << ", ";
       cout << endl;
