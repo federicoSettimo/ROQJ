@@ -1,12 +1,13 @@
 /*
   Phase covariant dynamics on 2 qubits (non-interacting).
 
-  Added a threshold for a2 == 0, now it works if ph cov on one qubit only
-
-  For two qubits evolving, eigenvalues < 0 and too big in magnitude.
-  Note: using C from the paper it works - why?
+  If initially entangles state, it doesn work.
+  
+  Furthermore, for both evolving, the post-jump state is entangled, even if starting from
+  a factorized one. So it breaks down.
 */
 #include "../roqj.h"
+#include <Unsupported/Eigen/KroneckerProduct>
 
 using namespace std;
 using namespace Eigen;
@@ -61,6 +62,7 @@ MatrixXcd C_1 (const MatrixXcd &rho, double t) {
     return MatrixXcd::Zero(4,4);
   double mu, c3, a2 = real(tr_2(rho)(1,1));
   mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.-a2)/a2 - sqrt(gamma_p_1(t)*gamma_m_1(t));
+  //mu = abs(a2 - 1.) <= 1e-6 ? -sqrt(gamma_p_1(t)*gamma_m_1(t)) : -gamma_p_1(t)*a2/(1.-a2) + sqrt(gamma_p_1(t)*gamma_m_1(t));
   c3 = gamma_z_1(t) - mu;
   return tens(2.*mu*sigma_p*sigma_m + c3*id, id);
 }
@@ -71,6 +73,7 @@ MatrixXcd C_2 (const MatrixXcd &rho, double t) {
     return MatrixXcd::Zero(4,4);
   double mu, c3, a2 = real(tr_1(rho)(1,1));
   mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.-a2)/a2 - sqrt(gamma_p_2(t)*gamma_m_2(t));
+  //mu = abs(a2 - 1.) <= 1e-6 ? -sqrt(gamma_p_2(t)*gamma_m_2(t)) : -gamma_p_2(t)*a2/(1.-a2) + sqrt(gamma_p_2(t)*gamma_m_2(t));
   c3 = gamma_z_2(t) - mu;
   return tens(id, 2.*mu*sigma_p*sigma_m + c3*id);
 }
@@ -81,27 +84,26 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 
 
 double observable (const MatrixXcd &rho) {
-  return real((sigma_x*tr_1(rho)).trace());
+  return real((sigma_z*tr_1(rho)).trace());
+  //return entropy(tr_1(rho));
 }
 
 
 int main () {
-  double tmin = 0., tmax = 5., dt = 0.01, threshold = 1;
+  double tmin = 0., tmax = 5., dt = 0.01, threshold = 1e-5;
   int N_ensemble = 1000, Ncopies = 3, dimH = 4, Ntraj = 10;
   bool printTraj = true;
 
   roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, dimH, printTraj, Ntraj, true, threshold);
 
-  //VectorXcd initialState;
-  //initialState = VectorXcd::Zero(4);
-  //double s = sin(M_PI/8.), c = cos(M_PI/8.);
-  //initialState << s*s, s*c, s*c, c*c; // psi tens psi
-  //initialState << s, c, 0, 0; // excited tens psi
-  //jump.set_initial_state(initialState);
+  VectorXcd initialState;
+  initialState = VectorXcd::Zero(4);
+  initialState << 1./sqrt(2.), 0., 0., 1./sqrt(2.);
+  jump.set_initial_state(initialState);
 
-  Vector2cd psi1;
-  psi1 << sin(M_PI/8.), cos(M_PI/8.);
-  jump.set_initial_state(tens_state(psi1, psi1));
+  //Vector2cd psi1;
+  //psi1 << sin(M_PI/8.), cos(M_PI/8.);
+  //jump.set_initial_state(tens_state(psi1, psi1));
 
   jump.run();
 
