@@ -57,34 +57,38 @@ MatrixXcd Gamma (double t) {
 
 
 MatrixXcd C_1 (const MatrixXcd &rho, double t) {
-  //return .5*(gamma_m_1(t)+gamma_p_1(t)+gamma_z_1(t))*tens(id,id); // C from the paper
+  //return .5*(gamma_m_1(t)+gamma_p_1(t)+ 2.*gamma_z_1(t))*id; // C from the paper
   if (gamma_z_1(t) >= 0.)
-    return MatrixXcd::Zero(4,4);
+    return MatrixXcd::Zero(2,2);
+  //double mu, c3, z = real((tr_2(rho)*sigma_z).trace());
+  //mu = abs(z) >= 1. - 1e-6 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.+z)/(1.-z) - sqrt(gamma_p_1(t)*gamma_m_1(t));
   double mu, c3, a2 = real(tr_2(rho)(1,1));
   mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.-a2)/a2 - sqrt(gamma_p_1(t)*gamma_m_1(t));
   //mu = abs(a2 - 1.) <= 1e-6 ? -sqrt(gamma_p_1(t)*gamma_m_1(t)) : -gamma_p_1(t)*a2/(1.-a2) + sqrt(gamma_p_1(t)*gamma_m_1(t));
   c3 = gamma_z_1(t) - mu;
-  return tens(2.*mu*sigma_p*sigma_m + c3*id, id);
+  return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
 MatrixXcd C_2 (const MatrixXcd &rho, double t) {
-  //return .5*(gamma_m_2(t)+gamma_p_2(t)+2.*gamma_z_2(t))*tens(id,id); // C from the paper
+  //return .5*(gamma_m_2(t)+gamma_p_2(t)+2.*gamma_z_2(t))*id; // C from the paper
   if (gamma_z_2(t) >= 0.)
-    return MatrixXcd::Zero(4,4);
+    return MatrixXcd::Zero(2,2); 
+  //double mu, c3, z = real((tr_1(rho)*sigma_z).trace());
+  //mu = abs(z) >= 1. - 1e-6 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.+z)/(1.-z) - sqrt(gamma_p_2(t)*gamma_m_2(t));
   double mu, c3, a2 = real(tr_1(rho)(1,1));
   mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.-a2)/a2 - sqrt(gamma_p_2(t)*gamma_m_2(t));
   //mu = abs(a2 - 1.) <= 1e-6 ? -sqrt(gamma_p_2(t)*gamma_m_2(t)) : -gamma_p_2(t)*a2/(1.-a2) + sqrt(gamma_p_2(t)*gamma_m_2(t));
   c3 = gamma_z_2(t) - mu;
-  return tens(id, 2.*mu*sigma_p*sigma_m + c3*id);
+  return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  return C_1(rho, t) + C_2(rho,t);
+  return tens(C_1(rho,t),id) + tens(id,C_2(rho,t));
 }
 
 
 double observable (const MatrixXcd &rho) {
-  return real((sigma_z*tr_1(rho)).trace());
+  return real((sigma_x*tr_1(rho)).trace());
   //return entropy(tr_1(rho));
 }
 
@@ -96,14 +100,14 @@ int main () {
 
   roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, dimH, printTraj, Ntraj, true, threshold);
 
-  VectorXcd initialState;
-  initialState = VectorXcd::Zero(4);
-  initialState << 1./sqrt(2.), 0., 0., 1./sqrt(2.);
-  jump.set_initial_state(initialState);
+  //VectorXcd initialState;
+  //initialState = VectorXcd::Zero(4);
+  //initialState << 1./sqrt(2.), 0., 0., 1./sqrt(2.);
+  //jump.set_initial_state(initialState);
 
-  //Vector2cd psi1;
-  //psi1 << sin(M_PI/8.), cos(M_PI/8.);
-  //jump.set_initial_state(tens_state(psi1, psi1));
+  Vector2cd psi1;
+  psi1 << sin(M_PI/8.), cos(M_PI/8.);
+  jump.set_initial_state(tens_state(psi1, psi1));
 
   jump.run();
 
