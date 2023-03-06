@@ -6,15 +6,20 @@ ph_cov: roqj.o Examples/ph_cov.cpp
 	./Examples/ph_cov.x
 	python3 Examples/plot.py "Phase covariant, undriven" "$$\rho_{01}(t)$$" #ph_cov.png
 
+ph_cov_non_P: roqj.o roqj_pop.o Examples/ph_cov_non_P.cpp
+	g++ Examples/ph_cov_non_P.cpp roqj.o roqj_pop.o -o Examples/ph_cov_non_P.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_non_P.x
+	python3 Examples/plot.py "Phase covariant non-P divisible" "$$ tr[\rho(t)\sigma_z] $$" ph_cov_non_P.png
+
+ph_cov_2_qubits: roqj.o Examples/ph_cov_2_qubits.cpp
+	g++ Examples/ph_cov_2_qubits.cpp roqj.o -o Examples/ph_cov_2_qubits.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_2_qubits.x
+	python3 Examples/plot.py "Phase covariant 2 qubits" "$$ tr[\rho_2\sigma_x] $$" #ph_cov_2_qubits.png
+
 ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 	g++ Examples/ph_cov_x.cpp roqj.o -o Examples/ph_cov_x.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_x.x
 	python3 Examples/plot.py "Phase covariant, eigenstates of $$\sigma_{x}$$" "$$ tr[\rho(t)\sigma_{x}]$$" #Ph_cov_x.png
-
-ph_cov_nonP: roqj.o Examples/ph_cov_nonP.cpp
-	g++ Examples/ph_cov_nonP.cpp roqj.o -o Examples/ph_cov_nonP.x -std=c++20 -O3 -ffast-math -fno-math-errno
-	./Examples/ph_cov_nonP.x
-	python3 Examples/plot.py "Phase covariant non P divisible, undriven" "$$\rho_{01}(t)$$" Ph_cov_nonP.png
 
 ensemble: roqj.o roqj_mixed.o Examples/ensemble.cpp
 	g++ Examples/ensemble.cpp roqj.o roqj_mixed.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -54,6 +59,10 @@ ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_pop.o
 	g++ Examples/ph_cov_pop.cpp roqj.o roqj_pop.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_pop.x
 	python3 Examples/plot.py "Phase covariant, using effective populations" "$$ tr[\rho(t)\sigma_{z}]$$" #Ph_cov_pop.png
+
+ph_cov_pop_no_plot: Examples/ph_cov_pop.cpp roqj.o roqj_pop.o
+	g++ Examples/ph_cov_pop.cpp roqj.o roqj_pop.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_pop.x
 
 roqj_arma.o: roqj_arma.h roqj_arma.cpp
 	g++ roqj_arma.cpp -c -o roqj_arma.o -O2 -std=c++20 -I /Users/federico/armadillo-11.4.3/include/ -DARMA_DONT_USE_WRAPPER
