@@ -36,7 +36,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   //else mu = .5*(gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t))) + .5*(-gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t)));
 
   //double mu, c3, z = real((rho*sigma_z).trace());
-  //mu = abs(z) >= 1. - 1e-6 ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.+z)/(1.-z) - sqrt(gamma_p(t)*gamma_m(t));
+  //mu = abs(z) == 1 ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.+z)/(1.-z) - sqrt(gamma_p(t)*gamma_m(t));
 
   c3 = gamma_z(t) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
@@ -46,7 +46,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 //MatrixXcd C (const MatrixXcd &rho, double t) {return .5*(gamma_p(t)+gamma_m(t)+2.*gamma_z(t))*id;}
 
 //double observable (const MatrixXcd &rho) {return real(rho(0,1));}
-double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
+double observable (const MatrixXcd &rho) {return real((rho*sigma_x).trace());}
 
 int main () {
   double tmin = 0., tmax = 5, dt = 0.01;

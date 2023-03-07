@@ -15,12 +15,12 @@ using namespace Eigen;
 double gamma_p_2 (double t) {return 1.;}
 double gamma_m_2 (double t) {return 1.;}
 double gamma_z_2 (double t) {return -.5*tanh(t);}
-//double gamma_p_1 (double t) {return 1.;}
-//double gamma_m_1 (double t) {return 1.;}
-//double gamma_z_1 (double t) {return -.5*tanh(t);}
-double gamma_p_1 (double t) {return 0.;}
-double gamma_m_1 (double t) {return 0.;}
-double gamma_z_1 (double t) {return 0.;}
+double gamma_p_1 (double t) {return 1.;}
+double gamma_m_1 (double t) {return 1.;}
+double gamma_z_1 (double t) {return -.5*tanh(t);}
+//double gamma_p_1 (double t) {return 0.;}
+//double gamma_m_1 (double t) {return 0.;}
+//double gamma_z_1 (double t) {return 0.;}
 
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
@@ -57,9 +57,10 @@ MatrixXcd Gamma (double t) {
 
 
 MatrixXcd C_1 (const MatrixXcd &rho, double t) {
-  //return .5*(gamma_m_1(t)+gamma_p_1(t)+ 2.*gamma_z_1(t))*id; // C from the paper
-  if (gamma_z_1(t) >= 0.)
-    return MatrixXcd::Zero(2,2);
+  //return .5*(gamma_m_1(t)+gamma_p_1(t)+ gamma_z_1(t))*id; // C from the paper
+  return -gamma_z_1(t)*id; // R3 from the paper
+  //if (gamma_z_1(t) >= 0.)
+    //return MatrixXcd::Zero(2,2);
   //double mu, c3, z = real((tr_2(rho)*sigma_z).trace());
   //mu = abs(z) >= 1. - 1e-6 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.+z)/(1.-z) - sqrt(gamma_p_1(t)*gamma_m_1(t));
   double mu, c3, a2 = real(tr_2(rho)(1,1));
@@ -70,9 +71,10 @@ MatrixXcd C_1 (const MatrixXcd &rho, double t) {
 }
 
 MatrixXcd C_2 (const MatrixXcd &rho, double t) {
-  //return .5*(gamma_m_2(t)+gamma_p_2(t)+2.*gamma_z_2(t))*id; // C from the paper
-  if (gamma_z_2(t) >= 0.)
-    return MatrixXcd::Zero(2,2); 
+  //return .5*(gamma_m_2(t)+gamma_p_2(t)+gamma_z_2(t))*id; // C from the paper
+  return -gamma_z_2(t)*id; // R3 from the paper
+  //if (gamma_z_2(t) >= 0.)
+    //return MatrixXcd::Zero(2,2); 
   //double mu, c3, z = real((tr_1(rho)*sigma_z).trace());
   //mu = abs(z) >= 1. - 1e-6 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.+z)/(1.-z) - sqrt(gamma_p_2(t)*gamma_m_2(t));
   double mu, c3, a2 = real(tr_1(rho)(1,1));
