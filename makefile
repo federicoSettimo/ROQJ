@@ -11,6 +11,11 @@ ph_cov_non_P: roqj.o roqj_pop.o Examples/ph_cov_non_P.cpp
 	./Examples/ph_cov_non_P.x
 	python3 Examples/plot.py "Phase covariant non-P divisible" "$$ tr[\rho(t)\sigma_z] $$" ph_cov_non_P.png
 
+ph_cov_nM: roqj.o Examples/ph_cov_nM.cpp
+	g++ Examples/ph_cov_nM.cpp roqj.o -o Examples/ph_cov_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_nM.x
+	#python3 Examples/plot_nM.py "Phase covariant, undriven" "$$\rho_{01}(t)$$" #ph_cov_nM.png
+
 ph_cov_2_qubits: roqj.o Examples/ph_cov_2_qubits.cpp
 	g++ Examples/ph_cov_2_qubits.cpp roqj.o -o Examples/ph_cov_2_qubits.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_2_qubits.x
