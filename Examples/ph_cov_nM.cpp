@@ -8,11 +8,12 @@ using namespace Eigen;
 double gamma_p (double t) {return exp(-.5*t);}
 double gamma_m (double t) {return exp(-.25*t);}
 double gamma_z (double t) {return 2.*exp(-3.*t/8.)*cos(2.*t)*.5;}
-//double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
-double b (double t) {return 0.;}
+double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
+//double b (double t) {return 0.;}
 
 MatrixXcd H (double t) {
-  return -0.5*b(t)*sigma_z;
+  //return -0.5*b(t)*sigma_x;
+  return sigma_x;
 }
 
 MatrixXcd J (const MatrixXcd &rho, double t) {
@@ -34,7 +35,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
-double observable (const MatrixXcd &rho) {return real((rho*sigma_x).trace());}
+double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
 
 int main () {
   double tmin = 0., tmax = 5., dt = 0.01;
