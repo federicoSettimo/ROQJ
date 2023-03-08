@@ -253,7 +253,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       }
       psi[i] = psi[i].normalized();
       for (int j = 0; j < _dim_Hilbert_space; ++j) {
-        if (abs(psi[i](j)) < _threshold && abs(psi[i](j)) > 0)
+        if (abs(psi[i](j)) < _threshold)
           psi[i](j) = 0.;
       }
       psi[i] = psi[i].normalized();
