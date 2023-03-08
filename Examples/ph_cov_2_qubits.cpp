@@ -1,11 +1,10 @@
 /*
   Phase covariant dynamics on 2 qubits (non-interacting).
 
-  For the state-independent C: it works, but not sure why. It also works for initially entangled initial state.
-  Howevwer J tens id doesn't work on entangled states, sice R is P but not CP
+  Fixed J = (J1 tens id) + (id tens J2)
 
-  For the state-dependent C: doesn work if both evolve, unless some particular initial states.
-  Also J tens id doesn't work on entangled states, even if it should since R is also CP
+  Works only for factorised initial states and only one qubit evolving. If both evolve, jumps are to entangled states and
+  therefore the positivity of R is no longer guaranteed.
 */
 #include "../roqj.h"
 #include <Unsupported/Eigen/KroneckerProduct>
@@ -40,11 +39,7 @@ MatrixXcd J2 (const MatrixXcd &rho, double t) {
 }
 
 MatrixXcd J (const MatrixXcd &rho, double t) {
-  //return J1(rho,t) + J2(rho,t);
-
-  if (gamma_m_1(t) == 0. && gamma_p_1(t) == 0. && gamma_z_1(t) == 0.) return J2(rho,t);
-  if (gamma_m_2(t) == 0. && gamma_p_2(t) == 0. && gamma_z_2(t) == 0.) return J1(rho,t);
-  return gamma_p_2(t)*gamma_p_1(t)*tens(sigma_p, sigma_p)*rho*tens(sigma_m, sigma_m) + gamma_m_2(t)*gamma_m_1(t)*tens(sigma_m, sigma_m)*rho*tens(sigma_p, sigma_p) + gamma_z_2(t)*gamma_z_1(t)*tens(sigma_z, sigma_z)*rho*tens(sigma_z, sigma_z);
+  return J1(rho,t) + J2(rho,t);
 }
 
 
@@ -57,38 +52,30 @@ MatrixXcd Gamma_2 (double t) {
 }
 
 MatrixXcd Gamma (double t) {
-  //return Gamma_1(t) + Gamma_2(t);
-
-  if (gamma_m_1(t) == 0. && gamma_p_1(t) == 0. && gamma_z_1(t) == 0.) return Gamma_2(t);
-  if (gamma_m_2(t) == 0. && gamma_p_2(t) == 0. && gamma_z_2(t) == 0.) return Gamma_1(t);
-  return gamma_p_2(t)*gamma_p_1(t)*tens(sigma_m*sigma_p, sigma_m*sigma_p) + gamma_m_2(t)*gamma_m_1(t)*tens(sigma_p*sigma_m, sigma_p*sigma_m) + gamma_z_2(t)*gamma_z_1(t)*tens(id,id);
+  return Gamma_1(t) + Gamma_2(t);
 }
 
 
 MatrixXcd C_1 (const MatrixXcd &rho, double t) {
-  if (gamma_m_1(t) == 0. && gamma_p_1(t) == 0. && gamma_z_1(t) == 0.) return id;
-  return .5*(gamma_m_1(t)+gamma_p_1(t)+ gamma_z_1(t))*id; // C from the paper
+  //return .5*(gamma_m_1(t)+gamma_p_1(t)+ gamma_z_1(t))*id; // C from the paper
 
   double mu, c3, a2 = real(tr_2(rho)(1,1));
-  mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.-a2)/a2 - sqrt(gamma_p_1(t)*gamma_m_1(t));
+  mu = abs(a2) <= 1e-4 ? sqrt(gamma_p_1(t)*gamma_m_1(t)) : gamma_m_1(t)*(1.-a2)/a2 - sqrt(gamma_p_1(t)*gamma_m_1(t));
   c3 = gamma_z_1(t) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
 MatrixXcd C_2 (const MatrixXcd &rho, double t) {
-  if (gamma_m_2(t) == 0. && gamma_p_2(t) == 0. && gamma_z_2(t) == 0.) return id;
-  return .5*(gamma_m_2(t)+gamma_p_2(t)+gamma_z_2(t))*id; // C from the paper
+  //return .5*(gamma_m_2(t)+gamma_p_2(t)+gamma_z_2(t))*id; // C from the paper
 
   double mu, c3, a2 = real(tr_1(rho)(1,1));
-  mu = abs(a2) <= 1e-6 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.-a2)/a2 - sqrt(gamma_p_2(t)*gamma_m_2(t));
+  mu = abs(a2) <= 1e-4 ? sqrt(gamma_p_2(t)*gamma_m_2(t)) : gamma_m_2(t)*(1.-a2)/a2 - sqrt(gamma_p_2(t)*gamma_m_2(t));
   c3 = gamma_z_2(t) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  //return tens(C_1(rho,t), id) + tens(id, C_2(rho,t));
-
-  return tens(C_1(rho,t), C_2(rho,t));
+  return tens(C_1(rho,t), id) + tens(id, C_2(rho,t));
 }
 
 
