@@ -7,13 +7,12 @@ using namespace Eigen;
 
 double gamma_p (double t) {return exp(-.5*t);}
 double gamma_m (double t) {return exp(-.25*t);}
-double gamma_z (double t) {return 2.*exp(-3.*t/8.)*cos(2.*t)*.5;}
-double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
-//double b (double t) {return 0.;}
+double gamma_z (double t) {return 1.1*exp(-3.*t/8.)*cos(2.*t)*.5;}
+//double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
+double b (double t) {return 0.;}
 
 MatrixXcd H (double t) {
-  //return -0.5*b(t)*sigma_x;
-  return sigma_x;
+  return -0.5*b(t)*sigma_z;
 }
 
 MatrixXcd J (const MatrixXcd &rho, double t) {
@@ -35,14 +34,14 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
-double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
+double observable (const MatrixXcd &rho) {return real(rho(0,1));}
 
 int main () {
-  double tmin = 0., tmax = 5., dt = 0.01;
+  double tmin = 0., tmax = 5., dt = 0.01, threshold = 1e-10;
   int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
+  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
