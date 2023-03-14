@@ -104,6 +104,9 @@ public:
 
   // Prints the errors of the observable in file_out
   VectorXd get_error_observable (string file_out = "error.txt") const;
+
+  // Prints the trajectory of the deterministically evolving state
+  VectorXd get_det_trajectory (string file_out = "det_traj.txt") const;
 };
 
 

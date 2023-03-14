@@ -199,6 +199,27 @@ VectorXd roqj::get_error_observable (string file_out) const {
 }
 
 
+VectorXd roqj::get_det_trajectory (string file_out) const {
+  VectorXcd psi = _initial_state;
+  VectorXd traj(_num_timesteps);
+  int i = 0;
+  ofstream out;
+  if (file_out != "")
+    out.open(file_out);
+  for (double t = _t_i; t <= _t_f; t += _dt) {
+    MatrixXcd K = H(t) + 0.5*(C(projector(psi), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi), t).real() ) );
+    psi -=  K*psi*complex<double>(0.,1.)*_dt;
+    psi = psi.normalized();
+    double x = observable(projector(psi));
+    traj[i] = x;
+    ++i;
+    if (file_out != "")
+      out << x << endl;
+  }
+  return traj;
+}
+
+
 // --- Run single iteration
 VectorXd roqj::run_single_iterations (bool verbose) const {
   VectorXd observables(_num_timesteps);
