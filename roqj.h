@@ -126,7 +126,7 @@ public:
   void set_initial_state ();
 
   // Performs the jump with only 2 possible channels
-  VectorXcd jump (const MatrixXcd &R, double z) const;
+  VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi) const;
 
   // Runs with the 2-channel jumps
   void run ();

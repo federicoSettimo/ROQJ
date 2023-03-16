@@ -378,7 +378,7 @@ void qubit_roqj::set_initial_state (const VectorXcd &psi) {
 void qubit_roqj::set_initial_state () {VectorXcd a; a << 1./sqrt(2.), 1./sqrt(2.); _initial_state = a;}
 
 // --- Jump
-VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z) const {
+VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi) const {
   ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(R);
   VectorXcd eigval = eigs.eigenvalues();
@@ -393,7 +393,8 @@ VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z) const {
   }
   else {// Reverse jump ----- Not implemented??
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
-    cout << lambda1 << ", " << lambda2 << endl;
+    cout << "Eigenvalues: " << lambda1 << ", " << lambda2 << endl;
+    cout << "State: " << psi.transpose() << endl;
     exit(EXIT_FAILURE);
   }
   return VectorXcd::Ones(2).normalized();
@@ -448,7 +449,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       double z = (double)rand()/((double)RAND_MAX);
 
       if (z < real(R.trace())*_dt){ // Jump
-        psi[i] = this->jump(R,z);
+        psi[i] = this->jump(R,z,psi[i]);
       }
       else {// Free evolution
         MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
