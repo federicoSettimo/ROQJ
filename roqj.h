@@ -1,7 +1,3 @@
-// For a reasonbale execution time, use the flags
-// -ffast-math -fno-math-errno -O3
-// both for the library and for the program
-
 /*
   Class producing the ROQJ trajectories.
   Required an external definition of the operators defining the dynamics (H, J, Gamma), of C defining the diferent ROs, and of the chosen observble
@@ -114,7 +110,7 @@ public:
 
 
 // ------------------------- Qubit ROQJ class -------------------------
-class qubit_roqj:public roqj {
+class qubit_roqj : public roqj {
 protected:
   Vector2cd _initial_state;
 public:

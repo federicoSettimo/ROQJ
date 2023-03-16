@@ -463,7 +463,6 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
     if (verbose) traj << endl;
   }
   return observables;
-  return VectorXd::Zero(_num_timesteps);
 }
 
 
