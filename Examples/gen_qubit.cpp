@@ -11,6 +11,7 @@
 */
 
 #include "../roqj.h"
+#include "../roqj_gen_qubit.h"
 
 using namespace std;
 using namespace Eigen;
@@ -18,10 +19,7 @@ using namespace Eigen;
 double gamma_p (double t) {return 1.;}
 double gamma_m (double t) {return 1.;}
 double gamma_z (double t) {return -.5*tanh(t);}
-//double gamma_p (double t) {return exp(-2.*t);}
-//double gamma_p (double t) {return exp(-2.*t);}
-//double gamma_m (double t) {return exp(-t);}
-//double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t));}
+
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
 
@@ -38,6 +36,7 @@ MatrixXcd Gamma (double t) {
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
+  return MatrixXcd::Zero(2,2);
   ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(J(rho,t));
   VectorXcd eigval = eigs.eigenvalues(), phi, psi, tau;
@@ -76,7 +75,8 @@ int main () {
   int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj,true);
+  //qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
+  gen_qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);

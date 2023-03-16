@@ -39,8 +39,8 @@ ph_cov_x_no_plot: roqj.o Examples/ph_cov_x.cpp
 	g++ Examples/ph_cov_x.cpp roqj.o -o Examples/ph_cov_x.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_x.x
 
-gen_qubit: roqj.o Examples/gen_qubit.cpp
-	g++ Examples/gen_qubit.cpp roqj.o -o Examples/gen_qubit.x -std=c++20 -O3 -ffast-math -fno-math-errno
+gen_qubit: roqj.o roqj_gen_qubit.o Examples/gen_qubit.cpp
+	g++ Examples/gen_qubit.cpp roqj.o roqj_gen_qubit.o -o Examples/gen_qubit.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/gen_qubit.x
 	python3 Examples/plot.py "Generic qubit dynamics" "$$\rho_{01}(t)$$" #gen_qubit.png
 
