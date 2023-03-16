@@ -1,13 +1,20 @@
-// Phase covariant violating also P divisibility
+// Phase covariant violating also P divisibility - no reverse jumps
 // Dynamics from Tetteinen - Quantum speed limit and divisibility of the dynamical map
 #include "../roqj.h"
 
 using namespace std;
 using namespace Eigen;
 
-double gamma_p (double t) {return exp(-.5*t);}
-double gamma_m (double t) {return exp(-.25*t);}
-double gamma_z (double t) {return 1.1*exp(-3.*t/8.)*cos(2.*t)*.5;}
+// Violations of P from gamma_z
+//double gamma_p (double t) {return exp(-.5*t);}
+//double gamma_m (double t) {return exp(-.25*t);}
+//double gamma_z (double t) {return 1.1*exp(-3.*t/8.)*cos(2.*t)*.5;}
+
+//Violations of P from gamma_-
+double gamma_p (double t) {return exp(-.5*t)*(1.1+cos(2.*t));}
+double gamma_m (double t) {return exp(-.5*t)*(0.9+cos(2.*t));}
+double gamma_z (double t) {return exp(-3.*t/8.);}
+
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
 
@@ -23,13 +30,24 @@ MatrixXcd Gamma (double t) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t)*id;
 }
 
-MatrixXcd C (const MatrixXcd &rho, double t) {
+// Violations of P from gamma_z
+/*MatrixXcd C (const MatrixXcd &rho, double t) {
   double mu, c3, a2 = real(rho(1,1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t);
   mu = a2 == 0 ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
   if (eps > 0) {
     if (a2 != 0) mu -= 2.*eps;
     else mu += 2.*eps;
   }
+  c3 = gamma_z(t) - mu;
+  return 2.*mu*sigma_p*sigma_m + c3*id;
+}*/
+
+// Violations of P from gamma_-
+MatrixXcd C (const MatrixXcd &rho, double t) {
+  double mu, c3, a2 = real(rho(1,1));
+  if (gamma_m(t) > 0. || a2 == 0)
+    mu = 0.;
+  else mu = gamma_m(t)*(1.-a2)/a2;
   c3 = gamma_z(t) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
