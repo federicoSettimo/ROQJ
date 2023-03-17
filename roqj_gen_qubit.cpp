@@ -80,7 +80,7 @@ VectorXd gen_qubit_roqj::run_single_iterations (bool verbose) const {
       // Computing the new C which will give (hopefully) a positive R
       double lambda1 = real(eigval(0)), lambda2 = real(eigval(1)), lambda, lambda_plus, beta, norm_inn;
       complex<double> inner_prod, gamma;
-      // Finds the negative eigenvalue (if nay)
+      // Finds the negative eigenvalue (if any)
       if (lambda1 < 0.) {
         phi = eigvec.col(0);
         lambda = lambda1;
@@ -123,7 +123,7 @@ VectorXd gen_qubit_roqj::run_single_iterations (bool verbose) const {
       }
       if (z < lambda*_dt) // First jump
         psi[i] = phi;
-      if (z < (lambda + lambda_plus)*_dt) // Second jump
+      else if (z < (lambda + lambda_plus)*_dt) // Second jump
         psi[i] = phi_plus;
       else { // Free evolution - now considering also Cnew
         MatrixXcd K = H(t) + 0.5*((C(projector(psi[i]), t)+Cnew).imag() - complex<double>(0.,1.)*(Gamma(t) + (C(projector(psi[i]), t)+Cnew).real() ));

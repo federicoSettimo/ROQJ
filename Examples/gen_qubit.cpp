@@ -37,7 +37,7 @@ MatrixXcd Gamma (double t) {
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
   // Using the optimized version - not working on z
-  //return MatrixXcd::Zero(2,2);
+  return MatrixXcd::Zero(2,2);
 
   // Using the optimized version, jumps to |g,e> - not working
   double a2 = abs(rho(1,1)), phi = arg(rho(0,1)), r = abs(J(rho,t)(0,1)), theta = arg(J(rho,t)(0,1)), sphi = sin(phi);
