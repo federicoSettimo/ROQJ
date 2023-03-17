@@ -6,7 +6,7 @@ MatrixXcd comm (const MatrixXcd &A, const MatrixXcd &B) {return A*B-B*A;}
 
 MatrixXcd anticomm (const MatrixXcd &A, const MatrixXcd &B) {return A*B+B*A;}
 
-MatrixXcd projector (const VectorXcd &psi) {return psi*psi.transpose().conjugate();}
+MatrixXcd projector (const VectorXcd &psi) {return psi*psi.adjoint();}
 
 MatrixXcd BlochToMatrix (double x, double y, double z) {
   double r = sqrt(x*x + y*y + z*z);
@@ -443,7 +443,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).transpose());
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
