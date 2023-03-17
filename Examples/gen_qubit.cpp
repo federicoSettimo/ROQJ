@@ -36,8 +36,26 @@ MatrixXcd Gamma (double t) {
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
+  // Using the optimized version - not working on z
   //return MatrixXcd::Zero(2,2);
-  ComplexEigenSolver<MatrixXcd> eigs;
+
+  // Using the optimized version, jumps to |g,e> - not working
+  double a2 = abs(rho(1,1)), phi = arg(rho(0,1)), r = abs(J(rho,t)(0,1)), theta = arg(J(rho,t)(0,1)), sphi = sin(phi);
+  if (a2 == 0 || a2 == 1)
+    return MatrixXcd::Zero(2,2);
+  MatrixXcd C = MatrixXcd::Zero(2,2);
+  if (sphi == 0) {
+    C(0,0) = -2.*r/(sqrt(a2)*sqrt(1.-a2));
+    C(1,0) = 2.*r/(1.-a2);
+  }
+  else {
+    C(0,0) = -2.*r*sin(theta)/(sqrt(a2)*sqrt(1.-a2)*sphi);
+    C(1,0) = 2.*r*sin(theta-phi)/((1.-a2)*sphi);
+  }
+  return C;
+
+  // Using the unoptimized version - working
+  /*ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(J(rho,t));
   VectorXcd eigval = eigs.eigenvalues(), phi, psi, tau;
   MatrixXcd eigvec = eigs.eigenvectors();
@@ -64,7 +82,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   beta = lambda/norm_inn;
   gamma = -2.*inner_prod*beta;
   tau = beta*psi + gamma*phi;
-  return tau*psi.adjoint();
+  return tau*psi.adjoint();*/
 }
 
 //double observable (const MatrixXcd &rho) {return real(rho(0,1));}
@@ -75,8 +93,8 @@ int main () {
   int N_ensemble = 1000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
-  //gen_qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
+  //qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
+  gen_qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
