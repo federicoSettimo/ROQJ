@@ -36,10 +36,10 @@ MatrixXcd Gamma (double t) {
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  // Using the optimized version - working on z
+  // Using the optimized version
   //return MatrixXcd::Zero(2,2);
 
-  // Using the optimized version, jumps to |g,e> - not working
+  // Using the optimized version, jumps to |g,e>
   double a2 = abs(rho(1,1)), phi = arg(rho(0,1)), r = abs(J(rho,t)(0,1)), theta = arg(J(rho,t)(0,1)), sphi = sin(phi);
   if (a2 == 0 || a2 == 1)
     return MatrixXcd::Zero(2,2);
@@ -54,7 +54,7 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
   }
   return C;
 
-  // Using the unoptimized version - working
+  // Using the unoptimized version
   /*ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(J(rho,t));
   VectorXcd eigval = eigs.eigenvalues(), phi, psi, tau;
