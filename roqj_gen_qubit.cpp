@@ -5,20 +5,6 @@ gen_qubit_roqj::gen_qubit_roqj (int N_states, double t_i, double t_f, double dt,
   srand(0);
 }
 
-Vector2cd gen_qubit_roqj::jump (const Vector2cd &phi1, const Vector2cd &phi2, double lambda1, double lambda2, double z) const {
-  if (lambda1 >= -_threshold && lambda2 >= -_threshold) {// Normal jump
-    // With probability pjump1, it jumps to the first eigenstate of R
-    if (z <= lambda1*_dt)
-      return phi1;
-    else return phi2;
-  }
-  else {// Reverse jump ----- Not implemented??
-    cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
-    cout << lambda1 << ", " << lambda2 << endl;
-    exit(EXIT_FAILURE);
-  }
-}
-
 void gen_qubit_roqj::run () {
   if (_verbose)
     print_info();
@@ -84,57 +70,68 @@ VectorXd gen_qubit_roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      // The old R without enforcing positivity, we get the eigenstates since they don't change
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).transpose());
+      // The old R without enforcing positivity, we calculate the eigenstates since they don't change
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
       ComplexEigenSolver<MatrixXcd> eigs;
       eigs.compute(R);
       VectorXcd eigval = eigs.eigenvalues(), phi, tau, phi_plus;
       MatrixXcd eigvec = eigs.eigenvectors(), Cnew;
 
-      // Computing the new C which will get (hopefully) a positive R
-      double lambda1 = real(eigval(0)), lambda2 = real(eigval(1)), lambda, cg = sqrt(real(rho(1,1))), theta = arg(rho(0,1)), beta, norm_inn, lambda_plus;
+      // Computing the new C which will give (hopefully) a positive R
+      double lambda1 = real(eigval(0)), lambda2 = real(eigval(1)), lambda, lambda_plus, beta, norm_inn;
       complex<double> inner_prod, gamma;
+      // Finds the negative eigenvalue (if nay)
       if (lambda1 < 0.) {
         phi = eigvec.col(0);
         lambda = lambda1;
         phi_plus = eigvec.col(1);
         lambda_plus = lambda2;
       }
-      else if (lambda2 < 0.) {
+      else {
         phi = eigvec.col(1);
         lambda = lambda2;
         phi_plus = eigvec.col(0);
-        lambda_plus = lambda2;
+        lambda_plus = lambda1;
       }
 
-      if (lambda1 > 0. && lambda2 > 0.) {
+      // If there is a negative eigenvalue, calculates the new C
+      if (lambda < 0.) {
         inner_prod = psi[i].dot(phi);
         norm_inn = norm(inner_prod);
         if (norm_inn == 0) {
+          // How should I deal with the case of orthogonal states?
           cout << "Warning: orthogonl states\n";
           break;
         }
         beta = lambda/norm_inn;
         gamma = -2.*inner_prod*beta;
         tau = beta*psi[i] + gamma*phi;
-        Cnew = tau*((psi[i]).adjoint());
+        Cnew = tau*psi[i].adjoint();
+        lambda = 0.;
+        lambda_plus += beta*norm(psi[i].dot(phi_plus));
       }
       else Cnew = MatrixXcd::Zero(2,2);
 
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(R.trace())*_dt){ // Jump
-        lambda -= beta*norm_inn;
-        lambda_plus += 2.*beta*norm(psi[i].dot(phi_plus))*norm_inn;
-        psi[i] = this->jump(phi,phi_plus, lambda,lambda_plus, z);
+      if (lambda_plus < -_threshold) {
+        cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
+        cout << "Time " << t << ", state " << psi[i].transpose() << endl;
+        cout << "Eigenvalues " << lambda_plus << ", " << lambda << endl;
+        exit(EXIT_FAILURE);
       }
+      if (z < lambda*_dt) // First jump
+        psi[i] = phi;
+      if (z < (lambda + lambda_plus)*_dt) // Second jump
+        psi[i] = phi_plus;
       else { // Free evolution - now considering also Cnew
-        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) + Cnew);
+        MatrixXcd K = H(t) + 0.5*((C(projector(psi[i]), t)+Cnew).imag() - complex<double>(0.,1.)*(Gamma(t) + (C(projector(psi[i]), t)+Cnew).real() ));
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
-      psi[i] = psi[i].normalized();
+      psi[i].normalize();
     }
+
     // Storing the observable
     observables[n_observable] = observable(rho);
     n_observable++;

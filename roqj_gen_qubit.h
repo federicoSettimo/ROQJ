@@ -18,9 +18,6 @@ public:
   */
   gen_qubit_roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
 
-  // Performs the jump with only 2 possible channels
-  Vector2cd jump (const Vector2cd &phi1, const Vector2cd &phi2, double lambda1, double lambda2, double z)  const;
-
   // Runs with the 2-channel jumps
   void run ();
 
