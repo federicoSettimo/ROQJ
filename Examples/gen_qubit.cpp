@@ -16,9 +16,15 @@
 using namespace std;
 using namespace Eigen;
 
-double gamma_p (double t) {return 1.;}
-double gamma_m (double t) {return 1.;}
-double gamma_z (double t) {return -.5*tanh(t);}
+// Eternally non-Markovian
+//double gamma_p (double t) {return 1.;}
+//double gamma_m (double t) {return 1.;}
+//double gamma_z (double t) {return -.5*tanh(t);}
+
+// From Teittenen, Maniscalco, in the P divisible case
+double gamma_p (double t) {return exp(-.5*t);}
+double gamma_m (double t) {return exp(-.25*t);}
+double gamma_z (double t) {return .9*exp(-3.*t/8.)*cos(2.*t)*.5;}
 
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
@@ -45,8 +51,10 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
     return MatrixXcd::Zero(2,2);
   MatrixXcd C = MatrixXcd::Zero(2,2);
   if (sphi == 0) {
-    C(0,0) = -2.*r/(sqrt(a2)*sqrt(1.-a2));
-    C(1,0) = 2.*r*sin(theta)/(1.-a2);
+    //C(0,0) = -2.*r/(sqrt(a2)*sqrt(1.-a2));
+    //C(1,0) = 2.*r*sin(theta)/(1.-a2);
+    C(0,0) = -2.*r*sin(M_PI*0.25 + theta)/(sqrt(a2)*sqrt(1.-a2));
+    C(1,0) = -2.*r*sin(M_PI*0.25 - theta)/(1.-a2);
   }
   else {
     C(0,0) = -2.*r*sin(theta)/(sqrt(a2)*sqrt(1.-a2)*sphi);
