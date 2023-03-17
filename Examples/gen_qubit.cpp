@@ -36,7 +36,7 @@ MatrixXcd Gamma (double t) {
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  return MatrixXcd::Zero(2,2);
+  //return MatrixXcd::Zero(2,2);
   ComplexEigenSolver<MatrixXcd> eigs;
   eigs.compute(J(rho,t));
   VectorXcd eigval = eigs.eigenvalues(), phi, psi, tau;
@@ -68,15 +68,15 @@ MatrixXcd C (const MatrixXcd &rho, double t) {
 }
 
 //double observable (const MatrixXcd &rho) {return real(rho(0,1));}
-double observable (const MatrixXcd &rho) {return real((rho*sigma_x).trace());}
+double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
 
 int main () {
   double tmin = 0., tmax = 5, dt = 0.01, threshold = 1e-5;
   int N_ensemble = 1000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  //qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
-  gen_qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
+  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj);
+  //gen_qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
