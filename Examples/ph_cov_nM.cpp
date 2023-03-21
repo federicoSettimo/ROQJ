@@ -5,15 +5,9 @@
 using namespace std;
 using namespace Eigen;
 
-// Violations of P from gamma_z
-//double gamma_p (double t) {return exp(-.5*t);}
-//double gamma_m (double t) {return exp(-.25*t);}
-//double gamma_z (double t) {return 1.1*exp(-3.*t/8.)*cos(2.*t)*.5;}
-
-//Violations of P from gamma_-
-double gamma_p (double t) {return exp(-.5*t)*(1.1+cos(2.*t));}
-double gamma_m (double t) {return exp(-.5*t)*(0.9+cos(2.*t));}
-double gamma_z (double t) {return exp(-3.*t/8.);}
+double gamma_p (double t) {return exp(-.5*t);}
+double gamma_m (double t) {return exp(-.25*t);}
+double gamma_z (double t) {return 4.*exp(-3.*t/8.)*cos(2.*t)*.5;} // For k = 5 doesn't work, for k = 4 yes - the threshold is somewhere in between
 
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
@@ -30,36 +24,24 @@ MatrixXcd Gamma (double t) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t)*id;
 }
 
-// Violations of P from gamma_z
-/*MatrixXcd C (const MatrixXcd &rho, double t) {
-  double mu, c3, a2 = real(rho(1,1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t);
-  mu = a2 == 0 ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
-  if (eps > 0) {
-    if (a2 != 0) mu -= 2.*eps;
-    else mu += 2.*eps;
-  }
-  c3 = gamma_z(t) - mu;
-  return 2.*mu*sigma_p*sigma_m + c3*id;
-}*/
-
-// Violations of P from gamma_-
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  double mu, c3, a2 = real(rho(1,1));
-  if (gamma_m(t) > 0. || a2 == 0)
-    mu = 0.;
-  else mu = gamma_m(t)*(1.-a2)/a2;
+  double mu, c3, a2 = real(rho(1,1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t);
+    mu = a2 == 0 ? sqrt(gamma_p(t)*gamma_m(t)) : 2.*gamma_z(t) + gamma_m(t)*(1-a2)/a2;
+  if (a2 == 0 && eps > 0)
+    mu += 2.*eps;
+
   c3 = gamma_z(t) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
 
-double observable (const MatrixXcd &rho) {return real(rho(0,1));}
+double observable (const MatrixXcd &rho) {return abs(rho(0,1));}
 
 int main () {
-  double tmin = 0., tmax = 5., dt = 0.01, threshold = 1e-10;
-  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
+  double tmin = 0., tmax = 3., dt = 0.01, threshold = 1e-15;
+  int N_ensemble = 10000, Ncopies = 1, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
-  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
+  qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold); // Without reverse jumps
 
   Vector2cd initialState;
   initialState << sin(M_PI/8.), cos(M_PI/8.);
