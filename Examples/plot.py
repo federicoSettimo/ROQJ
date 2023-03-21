@@ -38,9 +38,9 @@ if print_traj == True:
     for i in range(Ntraj):
         plt.plot(t, trajectories[i,:], alpha=.1)
 plt.plot(t,exact,color='black', label="Exact")
-plt.errorbar(t,avg_obs,err_obs, marker='o', markersize=3, color='red', label="Average", errorevery=50, markevery=50, linewidth=0, elinewidth=1)
+plt.errorbar(t,avg_obs,err_obs, marker='o', markersize=3, color='red', label="Average", errorevery=30, markevery=30, linewidth=0, elinewidth=1)
 
-plt.legend(loc="lower right")
+plt.legend(loc="upper right")
 plt.xlabel(r'$t$')
 if sys.argv.__len__() > 1:
     plt.title(sys.argv[1])
