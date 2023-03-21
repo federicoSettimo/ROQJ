@@ -4,7 +4,7 @@ qubit_roqj_pop::qubit_roqj_pop (int N_states, double t_i, double t_f, double dt,
   srand(0);
   initialize(N_states, t_i, t_f, dt, N_copies, 2, print_trajectory, N_traj_print, verbose, threshold);
   ComplexEigenSolver<MatrixXcd> eigs;
-  MatrixXcd R = J(projector(_initial_state),0.5*(_t_f-_t_i)) + 0.5*(C(projector(_initial_state), 0.5*(_t_f-_t_i))*projector(_initial_state) + projector(_initial_state)*C(projector(_initial_state), 0.5*(_t_f-_t_i)).transpose());
+  MatrixXcd R = J(projector(_initial_state),0.5*(_t_f-_t_i)) + 0.5*(C(projector(_initial_state), 0.5*(_t_f-_t_i))*projector(_initial_state) + projector(_initial_state)*C(projector(_initial_state), 0.5*(_t_f-_t_i)).adjoint());
   eigs.compute(R);
   MatrixXcd eigvec = eigs.eigenvectors();
   _eig_1 = eigvec.col(0);
@@ -87,7 +87,7 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
     int N_1_old = N_1, N_2_old = N_2, N_init_old = N_init;
 
     // Let's compute all the eigenvalues
-    MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).transpose());
+    MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).adjoint());
     ComplexEigenSolver<MatrixXcd> eigs;
     eigs.compute(R);
     Vector2cd eigval = eigs.eigenvalues();
@@ -100,7 +100,7 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       lambda_2_init = tmp;
     }
 
-    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).transpose());
+    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).adjoint());
     eigs.compute(R);
     eigval = eigs.eigenvalues();
     double lambda_1_eig_1 = real(eigval[0])*_dt, lambda_2_eig_1 = real(eigval[1])*_dt;
@@ -111,7 +111,7 @@ VectorXd qubit_roqj_pop::run_single_iterations (bool verbose) const {
       lambda_2_eig_1 = tmp;
     }
 
-    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).transpose());
+    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).adjoint());
     eigs.compute(R);
     eigval = eigs.eigenvalues();
     double lambda_1_eig_2 = real(eigval[0])*_dt, lambda_2_eig_2 = real(eigval[1])*_dt;
@@ -199,7 +199,7 @@ void qubit_roqj_pop::get_trajectories (string file_out) {
   // Time evolution
   for (double t = _t_i; t <= _t_f; t += _dt) {
     // Let's compute all the eigenvalues
-    MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).transpose());
+    MatrixXcd R = J(projector(initial_state_t),t) + 0.5*(C(projector(initial_state_t), t)*projector(initial_state_t) + projector(initial_state_t)*C(projector(initial_state_t), t).adjoint());
     ComplexEigenSolver<MatrixXcd> eigs;
     eigs.compute(R);
     Vector2cd eigval = eigs.eigenvalues();
@@ -212,7 +212,7 @@ void qubit_roqj_pop::get_trajectories (string file_out) {
       lambda_2_init = tmp;
     }
 
-    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).transpose());
+    R = J(projector(_eig_1),t) + 0.5*(C(projector(_eig_1), t)*projector(_eig_1) + projector(_eig_1)*C(projector(_eig_1), t).adjoint());
     eigs.compute(R);
     eigval = eigs.eigenvalues();
     double lambda_1_eig_1 = real(eigval[0])*_dt, lambda_2_eig_1 = real(eigval[1])*_dt;
@@ -223,7 +223,7 @@ void qubit_roqj_pop::get_trajectories (string file_out) {
       lambda_2_eig_1 = tmp;
     }
 
-    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).transpose());
+    R = J(projector(_eig_2),t) + 0.5*(C(projector(_eig_2), t)*projector(_eig_2) + projector(_eig_2)*C(projector(_eig_2), t).adjoint());
     eigs.compute(R);
     eigval = eigs.eigenvalues();
     double lambda_1_eig_2 = real(eigval[0])*_dt, lambda_2_eig_2 = real(eigval[1])*_dt;
@@ -463,7 +463,7 @@ void qubit_roqj_pop_mixed::get_trajectories (string file_out) {
         double z = (double)rand()/((double)RAND_MAX);
 
         if (z < real(R.trace())*_dt) // Jump
-          psi[k] = this->jump(R,z);
+          psi[k] = this->jump(R,z, psi[k]);
         else {// Free evolution
           MatrixXcd K = H(t) + 0.5*(C(projector(psi[k]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[k]), t).real() ) );
           psi[k] -= K*psi[k]*complex<double>(0.,1.)*_dt;

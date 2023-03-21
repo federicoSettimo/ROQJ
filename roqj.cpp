@@ -446,8 +446,12 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
-      double z = (double)rand()/((double)RAND_MAX);
+      double z = (double)rand()/((double)RAND_MAX), tr_R = real(R.trace())*_dt;
 
+      if (tr_R < 0.) {
+        cerr << "Negative eigenvalues, tr[R] = " << tr_R/_dt << " < 0\n";
+        exit(EXIT_FAILURE);
+      }
       if (z < real(R.trace())*_dt){ // Jump
         psi[i] = this->jump(R,z,psi[i]);
       }
