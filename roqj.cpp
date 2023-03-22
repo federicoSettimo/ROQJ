@@ -448,8 +448,9 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX), tr_R = real(R.trace())*_dt;
 
-      if (tr_R < 0.) {
+      if (tr_R < -_threshold) {
         cerr << "Negative eigenvalues, tr[R] = " << tr_R/_dt << " < 0\n";
+        cout << "State: " << psi[i].transpose() << endl;
         exit(EXIT_FAILURE);
       }
       if (z < real(R.trace())*_dt){ // Jump
