@@ -50,14 +50,5 @@ int main () {
   jump.get_observable("average.txt");
   jump.get_error_observable("error.txt");
 
-  ofstream traj;
-  traj.open("det_traj.txt");
-  for (double t = tmin; t <= tmax; t += dt) {
-    traj << observable(projector(initialState)) << endl;
-    MatrixXcd K = H(t) + 0.5*(C(projector(initialState), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(initialState), t).real() ) );
-    initialState -= K*initialState*complex<double>(0.,1.)*dt;
-    initialState.normalize();
-  }
-
   return 0;
 }
