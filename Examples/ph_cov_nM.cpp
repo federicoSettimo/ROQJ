@@ -7,7 +7,7 @@ using namespace Eigen;
 
 double gamma_p (double t) {return exp(-.5*t);}
 double gamma_m (double t) {return exp(-.25*t);}
-double gamma_z (double t) {return 4.*exp(-3.*t/8.)*cos(2.*t)*.5;}
+double gamma_z (double t) {return 10*exp(-3.*t/8.)*cos(2.*t)*.5;}
 
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
@@ -37,12 +37,12 @@ double observable (const MatrixXcd &rho) {return abs(rho(0,1));}
 
 int main () {
   double tmin = 0., tmax = 3., dt = 0.01, threshold = 1e-15;
-  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
+  int N_ensemble = 10000, Ncopies = 1, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
   qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
   Vector2cd initialState;
-  initialState << sin(M_PI/8.), cos(M_PI/8.);
+  initialState << 0.1, 0.9;
   jump.set_initial_state(initialState);
 
   jump.run();

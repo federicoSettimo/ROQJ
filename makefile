@@ -16,6 +16,16 @@ ph_cov_nM: roqj.o Examples/ph_cov_nM.cpp
 	./Examples/ph_cov_nM.x
 	python3 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
 
+ph_cov_orthogonal: roqj.o Examples/ph_cov_orthogonal.cpp
+	g++ Examples/ph_cov_orthogonal.cpp roqj.o -o Examples/ph_cov_orthogonal.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_orthogonal.x
+	python3 Examples/plot.py "Phase covariant, orthogonal jumps" "$$\rho_{01}(t)$$" #ph_cov.png
+
+kappa_max_nonP: Examples/kappa_max_nonP.cpp
+	g++ Examples/kappa_max_nonP.cpp -o Examples/kappa_max_nonP.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/kappa_max_nonP.x
+	python3 Examples/kappa_max_nonP.py
+
 ph_cov_2_qubits: roqj.o Examples/ph_cov_2_qubits.cpp
 	g++ Examples/ph_cov_2_qubits.cpp roqj.o -o Examples/ph_cov_2_qubits.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_2_qubits.x

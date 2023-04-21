@@ -1,22 +1,16 @@
 #include "../roqj.h"
-#include <chrono>
 
-using namespace std::chrono;
 using namespace std;
 using namespace Eigen;
 
 double gamma_p (double t) {return 1.;}
 double gamma_m (double t) {return 1.;}
 double gamma_z (double t) {return -.5*tanh(t);}
-//double gamma_p (double t) {return exp(-2.*t);}
-//double gamma_p (double t) {return exp(-2.*t);}
-//double gamma_m (double t) {return exp(-t);}
-//double gamma_z (double t) {return -0.5*sqrt(gamma_p(t)*gamma_m(t));}
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
 
 MatrixXcd H (double t) {
-  return -0.5*b(t)*sigma_z;
+  return -0.5*b(t)*sigma_x;
 }
 
 MatrixXcd J (const MatrixXcd &rho, double t) {
@@ -28,7 +22,7 @@ MatrixXcd Gamma (double t) {
 }
 
 MatrixXcd C (const MatrixXcd &rho, double t) {
-  double mu, c3, a2 = real(rho(1,1));
+  double mu, c3, a2 = abs(rho(1,1));
   mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
   //mu = a2 == 1. ? -sqrt(gamma_p(t)*gamma_m(t)) : -gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t));
   //if (a2 == 0.) mu = sqrt(gamma_p(t)*gamma_m(t));
