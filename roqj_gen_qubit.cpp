@@ -71,7 +71,7 @@ VectorXd gen_qubit_roqj::run_single_iterations (bool verbose) const {
       rho += projector(psi[i])/((double)_N_states);
 
       // The old R without enforcing positivity, we calculate the eigenstates since they don't change
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(psi[i], t)*projector(psi[i]) + projector(psi[i])*C(psi[i], t).adjoint());
       ComplexEigenSolver<MatrixXcd> eigs;
       eigs.compute(R);
       VectorXcd eigval = eigs.eigenvalues(), phi, tau, phi_plus;
@@ -126,7 +126,7 @@ VectorXd gen_qubit_roqj::run_single_iterations (bool verbose) const {
       else if (z < (lambda + lambda_plus)*_dt) // Second jump
         psi[i] = phi_plus;
       else { // Free evolution - now considering also Cnew
-        MatrixXcd K = H(t) + 0.5*((C(projector(psi[i]), t)+Cnew).imag() - complex<double>(0.,1.)*(Gamma(t) + (C(projector(psi[i]), t)+Cnew).real() ));
+        MatrixXcd K = H(t) + 0.5*((C(psi[i], t)+Cnew).imag() - complex<double>(0.,1.)*(Gamma(t) + (C(psi[i], t)+Cnew).real() ));
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
       psi[i].normalize();

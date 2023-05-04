@@ -207,7 +207,7 @@ VectorXd roqj::get_det_trajectory (string file_out) const {
   if (file_out != "")
     out.open(file_out);
   for (double t = _t_i; t <= _t_f; t += _dt) {
-    MatrixXcd K = H(t) + 0.5*(C(projector(psi), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi), t).real() ) );
+    MatrixXcd K = H(t) + 0.5*(C(psi, t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(psi, t).real() ) );
     psi -=  K*psi*complex<double>(0.,1.)*_dt;
     psi = psi.normalized();
     double x = observable(projector(psi));
@@ -261,7 +261,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*(C(projector(psi[i]), t).adjoint()));
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(psi[i], t)*projector(psi[i]) + projector(psi[i])*(C(psi[i], t).adjoint()));
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
@@ -269,7 +269,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       if (z < real(R.trace())*_dt) // Jump
         psi[i] = this->jump(R,z,psi[i]);
       else {// Free evolution
-        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
+        MatrixXcd K = H(t) + 0.5*(C(psi[i], t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(psi[i], t).real() ) );
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
       psi[i] = psi[i].normalized();
@@ -443,7 +443,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(projector(psi[i]), t)*projector(psi[i]) + projector(psi[i])*C(projector(psi[i]), t).adjoint());
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(C(psi[i], t)*projector(psi[i]) + projector(psi[i])*C(psi[i], t).adjoint());
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX), tr_R = real(R.trace())*_dt;
@@ -457,7 +457,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
         psi[i] = this->jump(R,z,psi[i]);
       }
       else {// Free evolution
-        MatrixXcd K = H(t) + 0.5*(C(projector(psi[i]), t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(projector(psi[i]), t).real() ) );
+        MatrixXcd K = H(t) + 0.5*(C(psi[i], t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(psi[i], t).real() ) );
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
       psi[i] = psi[i].normalized();
