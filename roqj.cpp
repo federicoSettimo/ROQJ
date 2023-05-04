@@ -324,8 +324,28 @@ VectorXcd roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi) const 
   for (int j = 0; j < _dim_Hilbert_space; ++j) {
     if (real(eigval[j]) < -_threshold) {
       cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
-      cout << "State: " << psi.transpose() << endl;
-      cout << "Eigenvalues: ";
+      cout << "State: (";
+      for (int i = 0; i < _dim_Hilbert_space; ++i) {
+        double re = real(psi(i)), im = imag(psi(i));
+        if (re == 0 && im == 0)
+          cout << 0;
+        else if (re == 0)
+          cout << im << " I";
+        else if (im == 0)
+          cout << re;
+        else {
+          cout << re;
+          if (im > 0)
+            cout << " + ";
+          else cout << " - ";
+          cout << abs(im) << " I";
+        }
+
+        if (i == _dim_Hilbert_space - 1)
+          cout << ")";
+        else cout << ",  ";
+      }
+      cout << "\nEigenvalues: ";
       for (int i = 0; i < _dim_Hilbert_space; ++i) 
         cout << real(eigval[i]) << ", ";
       cout << endl;
