@@ -266,7 +266,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(R.trace())*_dt) // Jump
+      if (z < real(R.trace())*_dt || real(R.trace()) < 0) // Jump
         psi[i] = this->jump(R,z,psi[i]);
       else {// Free evolution
         MatrixXcd K = H(t) + 0.5*(C(psi[i], t).imag() - complex<double>(0.,1.)*(Gamma(t) + C(psi[i], t).real() ) );
