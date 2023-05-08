@@ -8,12 +8,12 @@
 using namespace std;
 using namespace Eigen;
 
-/*
+///*
 double gamma_p (double t) {return exp(-.25*t);}
 double gamma_m (double t) {return exp(-.25*t);}
 double gamma_z (double t) {return 0.;}
 //*/
-///*
+/*
 double gamma_p (double t) {return 1.;}
 double gamma_m (double t) {return 1.;}
 double gamma_z (double t) {return -.5*tanh(t);}
@@ -25,12 +25,10 @@ MatrixXcd H (double t) {
 }
 
 
-Matrix2cd J1 (const Matrix2cd &rho, double t) {
-  return gamma_p(t)*sigma_p*rho*sigma_m + gamma_m(t)*sigma_m*rho*sigma_p + gamma_z(t)*sigma_z*rho*sigma_z;
-}
-
 MatrixXcd J (const MatrixXcd &rho, double t) {
-  return tens(J1(tr_2(rho),t),id) + tens(id,J1(tr_1(rho),t));
+  return gamma_p(t)*(tens(sigma_p,id)*rho*tens(sigma_m,id) + tens(id,sigma_p)*rho*tens(id,sigma_m)) +
+         gamma_m(t)*(tens(sigma_m,id)*rho*tens(sigma_p,id) + tens(id,sigma_m)*rho*tens(id,sigma_p)) +
+         gamma_z(t)*(tens(sigma_z,id)*rho*tens(sigma_z,id) + tens(id,sigma_z)*rho*tens(id,sigma_z));
 }
 
 
@@ -42,10 +40,7 @@ MatrixXcd Gamma (double t) {
 MatrixXcd C (const VectorXcd &psi, double t) {
   Matrix4cd Ppsi = projector(psi), JJ = J(Ppsi,t);
   complex<double> J11 = psi.dot(JJ*psi);
-  //return -J11*Ppsi + 2.*J11*Ppsi - JJ*Ppsi; // The correct C: ok for P div, not ok for enm (mathematica confirms a <0 eigenvalue)
-
-  return -real(J11)*Ppsi + 2.*Ppsi*JJ*Ppsi - 2.*JJ*Ppsi - 2.*Ppsi*JJ; // With this extra term, ok for enm, not ok for P div dynamics
-  // Also, now the jumps preserve the entropy
+  return -J11*Ppsi + 2.*J11*Ppsi - JJ*Ppsi; // The correct C: ok for P div, not ok for enm (mathematica confirms a <0 eigenvalue)
 }
 
 
