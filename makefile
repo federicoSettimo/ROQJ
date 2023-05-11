@@ -26,10 +26,20 @@ kappa_max_nonP: Examples/kappa_max_nonP.cpp
 	./Examples/kappa_max_nonP.x
 	python3 Examples/kappa_max_nonP.py
 
+3d_ph_cov: roqj.o Examples/3d_ph_cov.cpp
+	g++ Examples/3d_ph_cov.cpp roqj.o -o Examples/3d_ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/3d_ph_cov.x
+	python3 Examples/plot.py "Phase covariant 3d" "$$ \rho_{01} (t) $$" #3d_ph_cov.png
+
+norm: Examples/norm.cpp
+	g++ Examples/norm.cpp -o Examples/norm.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/norm.x
+	python3 Examples/plot_norm.py
+
 ph_cov_2_qubits: roqj.o Examples/ph_cov_2_qubits.cpp
 	g++ Examples/ph_cov_2_qubits.cpp roqj.o -o Examples/ph_cov_2_qubits.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_2_qubits.x
-	python3 Examples/plot.py "Phase covariant 2 qubits" "$$ tr[\rho_2\sigma_x] $$" #ph_cov_2_qubits.png
+	python3 Examples/plot.py "Phase covariant 2 qubits" "$$ H[tr_2\rho] $$" #ph_cov_2_qubits.png
 
 ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 	g++ Examples/ph_cov_x.cpp roqj.o -o Examples/ph_cov_x.x -std=c++20 -O3 -ffast-math -fno-math-errno
