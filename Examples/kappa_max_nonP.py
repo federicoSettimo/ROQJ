@@ -13,7 +13,7 @@ for i in range(npoints):
     theta[i] = float(pair.split()[1])
 
 
-plt.scatter(kappa,theta,s=.05)
+plt.scatter(kappa,theta,s=.01)
 plt.xlabel(r'$\kappa$')
 plt.ylabel(r'$\theta$')
 plt.title(r'$|\psi_0> = \cos\theta|g> + \sin\theta|e>$')

@@ -47,7 +47,7 @@ bool isPdiv (double t, double kappa) {return sqrt(gamma_p(t)*gamma_m(t)) + 2.*ga
 Matrix2cd projector (const Vector2cd &psi) {return psi*psi.adjoint();}
 
 int main () {
-  double dkappa = .01, dtheta = .001*M_PI, dt = .01, threshold = 1e-5;
+  double dkappa = .001, dtheta = .0001*M_PI, dt = .01, threshold = 1e-13;
   int npoints = 0; // Number of points (kappa,theta) printed
 
   ofstream out, npoints_out;
@@ -55,7 +55,7 @@ int main () {
   npoints_out.open("kappa_theta_npoints.txt");
 
   // K = 8.25 is approximately the threshold after which the map is no more CP for all times
-  for (double kappa = 0.; kappa <= 8.25; kappa += dkappa) {
+  for (double kappa = 1.; kappa <= 8.25; kappa += dkappa) {
     for (double theta = 0.; theta < .5*M_PI + dtheta; theta += dtheta) { // theta = 0: |g>; theta = pi/2: |e>
       Vector2cd initialState = cos(theta)*ground_state + sin(theta)*excited_state, psi;
       initialState.normalize();
