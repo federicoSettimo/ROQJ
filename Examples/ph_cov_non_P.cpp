@@ -22,8 +22,8 @@ MatrixXcd Gamma (double t) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t)*id;
 }
 
-MatrixXcd C (const MatrixXcd &rho, double t) {
-  double mu, c3, a2 = real(rho(1,1));
+MatrixXcd C (const VectorXcd &psi, double t) {
+  double mu, c3, a2 = norm(psi(1));
   mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) : gamma_m(t)*(1.-a2)/a2 - sqrt(gamma_p(t)*gamma_m(t));
   //mu = a2 == 1. ? -sqrt(gamma_p(t)*gamma_m(t)) : -gamma_p(t)*a2/(1.-a2) + sqrt(gamma_p(t)*gamma_m(t));
   //if (a2 == 0.) mu = sqrt(gamma_p(t)*gamma_m(t));
