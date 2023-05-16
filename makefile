@@ -29,7 +29,7 @@ kappa_max_nonP: Examples/kappa_max_nonP.cpp
 3d_ph_cov: roqj.o Examples/3d_ph_cov.cpp
 	g++ Examples/3d_ph_cov.cpp roqj.o -o Examples/3d_ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/3d_ph_cov.x
-	python3 Examples/plot.py "Phase covariant 3d" "$$ \rho_{01} (t) $$" #3d_ph_cov.png
+	python3 Examples/plot.py "Phase covariant 3d" "$$ <1|\rho|1> - <2|\rho|2> $$" #3d_ph_cov.png
 
 norm: Examples/norm.cpp
 	g++ Examples/norm.cpp -o Examples/norm.x -std=c++20 -O3 -ffast-math -fno-math-errno
