@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+fig,ax = plt.subplots()
+
 filein = open("kappa_theta_npoints.txt")
 npoints = int(filein.readline())
 
@@ -13,8 +15,9 @@ for i in range(npoints):
     theta[i] = float(pair.split()[1])
 
 
-plt.scatter(kappa,theta,s=.01)
-plt.xlabel(r'$\kappa$')
-plt.ylabel(r'$\theta$')
-plt.title(r'$|\psi_0> = \cos\theta|g> + \sin\theta|e>$')
+ax.scatter(kappa,theta,s=.01)
+ax.set_xlabel(r'$\kappa$')
+ax.set_ylabel(r'$\theta$')
+ax.set_title(r'$|\psi_0> = \cos\theta|g> + \sin\theta|e>$')
+
 plt.show()

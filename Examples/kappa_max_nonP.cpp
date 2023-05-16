@@ -34,10 +34,15 @@ MatrixXcd Gamma (double t, double kappa) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t,kappa)*id;
 }
 
-MatrixXcd C (const Vector2cd &psi, double t, double kappa) {
-  double mu, c3, a2 = norm(psi(1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t,kappa);
+MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
+  double mu, c3, a2 = norm(psi(1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t,kappa), mu_ub, mu_lb;
   eps = eps > 0. ? eps : 0.;
-  mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2;
+  if (theta < 1.3)
+    mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2 - 2.*eps;
+  else mu = a2 == 1. ? -sqrt(gamma_m(t)*gamma_p(t)) - 2.*eps : ((1.-a2)*sqrt(gamma_p(t)*gamma_m(t)) - a2*gamma_p(t))/(1.-a2) + 2.*eps;
+
+  //mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2 - 2.*eps;
+
   c3 = gamma_z(t,kappa) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
 }
@@ -47,7 +52,7 @@ bool isPdiv (double t, double kappa) {return sqrt(gamma_p(t)*gamma_m(t)) + 2.*ga
 Matrix2cd projector (const Vector2cd &psi) {return psi*psi.adjoint();}
 
 int main () {
-  double dkappa = .001, dtheta = .0001*M_PI, dt = .01, threshold = 1e-13;
+  double dkappa = .001, dtheta = .001*M_PI, dt = .01, threshold = 1e-13;
   int npoints = 0; // Number of points (kappa,theta) printed
 
   ofstream out, npoints_out;
@@ -55,7 +60,7 @@ int main () {
   npoints_out.open("kappa_theta_npoints.txt");
 
   // K = 8.25 is approximately the threshold after which the map is no more CP for all times
-  for (double kappa = 1.; kappa <= 8.25; kappa += dkappa) {
+  for (double kappa = 1.; kappa <= 2.5; kappa += dkappa) {
     for (double theta = 0.; theta < .5*M_PI + dtheta; theta += dtheta) { // theta = 0: |g>; theta = pi/2: |e>
       Vector2cd initialState = cos(theta)*ground_state + sin(theta)*excited_state, psi;
       initialState.normalize();
@@ -64,8 +69,8 @@ int main () {
 
       // Checks whether nM has begun or ended to stop the time-evol. theta_ok = true iff that theta has >0 eigs
       bool finished_nM = false, started_nM = false, theta_ok = true;
-      for (double t = 0.; t <= 100. && !finished_nM && theta_ok; t += dt) {
-        Matrix2cd K = .5*(C(psi,t,kappa).imag() - I*(Gamma(t,kappa) + C(psi,t,kappa).real())), R;
+      for (double t = 0.; t <= 10. && !finished_nM && theta_ok; t += dt) {
+        Matrix2cd K = .5*(C(psi,t,kappa,theta).imag() - I*(Gamma(t,kappa) + C(psi,t,kappa,theta).real())), R;
         psi -= K*psi*I*dt;
         psi.normalize();
 
@@ -73,7 +78,7 @@ int main () {
         if (!isPdiv(t,kappa)) {
           if(!started_nM)
             started_nM = true;
-          R = J(projector(psi),t,kappa) + 0.5*(C(psi, t,kappa)*projector(psi) + projector(psi)*(C(psi, t,kappa).adjoint()));
+          R = J(projector(psi),t,kappa) + 0.5*(C(psi, t, kappa, theta)*projector(psi) + projector(psi)*(C(psi, t, kappa, theta).adjoint()));
           ComplexEigenSolver<Matrix2cd> eigs;
           eigs.compute(R);
           Vector2cd eigval = eigs.eigenvalues();
