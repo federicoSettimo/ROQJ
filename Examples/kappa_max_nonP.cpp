@@ -38,10 +38,10 @@ MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
   double mu, c3, a2 = norm(psi(1)), eps = -.5*sqrt(gamma_m(t)*gamma_p(t)) - gamma_z(t,kappa), mu_ub, mu_lb;
   eps = eps > 0. ? eps : 0.;
   if (theta < 1.3)
-    mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2 - 2.*eps;
+    mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2;
   else mu = a2 == 1. ? -sqrt(gamma_m(t)*gamma_p(t)) - 2.*eps : ((1.-a2)*sqrt(gamma_p(t)*gamma_m(t)) - a2*gamma_p(t))/(1.-a2) + 2.*eps;
 
-  //mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2 - 2.*eps;
+  //mu = a2 == 0. ? sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps : 2.*gamma_z(t,kappa) + gamma_m(t)*(1-a2)/a2;
 
   c3 = gamma_z(t,kappa) - mu;
   return 2.*mu*sigma_p*sigma_m + c3*id;
