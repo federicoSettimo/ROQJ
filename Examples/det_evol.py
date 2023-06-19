@@ -25,9 +25,9 @@ tmax = float(filein.readline())
 
 # After-jump evolution
 filein = open("det_evol_jump.txt")
-tj = np.zeros((nsteps,nsteps))
-psij = np.zeros((nsteps,nsteps))
-for ttj in range(nsteps):
+tj = np.zeros((nsteps,2*nsteps))
+psij = np.zeros((nsteps,2*nsteps))
+for ttj in range(2*nsteps):
   for tt in range(nsteps):
     line = filein.readline()
     tj[tt,ttj] = float(line.split()[0])
@@ -41,6 +41,7 @@ for psi in range(nstates):
   ax[0].plot(t[:,psi],alpha[:,psi], alpha=.2)
 
 ax[0].axhline(alpha0,t[0,0],t[-1,0], color = "green", label = "Post jump state")
+ax[0].axhline(np.sqrt(1-alpha0**2),t[0,0],t[-1,0], color = "blue", label = "2 jumps")
 ax[0].set_ylabel(r'$\alpha = |<0|\psi>|$')
 ax[0].set_xlabel(r'$t$')
 ax[0].set_title("Deterministic evolution")
@@ -49,10 +50,14 @@ ax[0].axhspan(alpha_no_min, alpha_no_max, xmin = tmin/t[-1,0], xmax = tmax/t[-1,
 ax[0].text(-1,.97,r'$|0>$')
 ax[0].text(-1,-.03,r'$|1>$')
 
-for ttj in range(nsteps):
-  ax[1].plot(tj[:,ttj], psij[:,ttj], alpha=.2)
+for ttj in range(2*nsteps):
+  if ttj < nsteps:
+    ax[1].plot(tj[:,ttj], psij[:,ttj], alpha=.1, color = "green")
+  else:
+    ax[1].plot(tj[:,ttj], psij[:,ttj], alpha=.1, color = "blue")
 
-ax[1].axhline(alpha0,t[0,0],t[-1,0], color = "green", label = "Post jump state")
+ax[1].axhline(alpha0,t[0,0],t[-1,0], color = "green", label = "1 jump")
+ax[1].axhline(np.sqrt(1-alpha0**2),t[0,0],t[-1,0], color = "blue", label = "2 jumps")
 ax[1].set_xlabel(r'$t$')
 ax[1].set_title("Post-jump evolution")
 ax[1].axhspan(alpha_no_min, alpha_no_max, xmin = tmin/t[-1,0], xmax = tmax/t[-1,0], color = "red", alpha = .3, label = r'$\frac{1-\alpha^2}{\alpha^2} = \sqrt{\frac{\gamma_-}{\gamma_+}}$')

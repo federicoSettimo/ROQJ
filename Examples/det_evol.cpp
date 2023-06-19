@@ -35,14 +35,26 @@ MatrixXcd Gamma (double t, double kappa) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t,kappa)*id;
 }
 
+double alpha0 = .2;
+
 MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
+  MatrixXcd CC = MatrixXcd::Zero(2,2);
   double ag = abs(psi.dot(ground_state)), ae = sqrt(1.-ag*ag), gz = gamma_z(t,kappa), gp = gamma_p(t), gm = gamma_m(t);
+
+  if (ag == alpha0) {
+    double c1 = (gm - 7.*gp + 4*gz - 8.*(gp - 2.*gz)*cos(2.*theta) - (gm + gp - 4.*gz)*cos(4*theta))/16.;
+    double c2 = (-7.*gm + gp + 4.*gz + 8.*(gm - 2.*gz)*cos(2.*theta) - (gm + gp - 4.*gz)*cos(4*theta))/16.;
+    CC(0,0) = c1;
+    CC(1,1) = c2;
+    return CC;
+  }
+
   double c1 = (-(ae*pow(ag,2)*(gp - 3.*gz)) + pow(ae,3)*(gm - gz) - ae*(pow(ae,2)*(gm + gz) + pow(ag,2)*(gp + 3.*gz))*cos(2.*theta) + 
      2*ag*(pow(ag,2)*gp + pow(ae,2)*gz)*sin(2*theta))/(4.*ae*pow(ae*cos(theta) - ag*sin(theta),2));
   double c2 = -0.25*(pow(ae,2)*ag*(gm - 3.*gz) + pow(ag,3)*(-gp + gz) - ag*(pow(ag,2)*(gp + gz) + pow(ae,2)*(gm + 3.*gz))*cos(2.*theta) - 
       2*ae*(pow(ae,2)*gm + pow(ag,2)*gz)*sin(2.*theta))/(ag*pow(ae*cos(theta) - ag*sin(theta),2));
 
-  MatrixXcd CC = MatrixXcd::Zero(2,2);
+  
   CC(0,0) = c1;
   CC(1,1) = c2;
   return CC;
@@ -54,7 +66,6 @@ int main (int argc, char *argv[]) {
   ofstream out;
   out.open("det_evol.txt");
 
-  double alpha0 = .2;
   double kappa = 1.3, theta = acos(alpha0); // Theta = angle of the fixed state
   double tmax = 4., dt = 0.01, dalpha = 0.005;
   int Nsteps = (int)(tmax/dt)+1, Nstates = (int)(1./dalpha)-1;
@@ -94,6 +105,18 @@ int main (int argc, char *argv[]) {
   ofstream out_jump;
   out_jump.open("det_evol_jump.txt");
   Vector2cd psi0 = (alpha0*ground_state + sqrt(1.-alpha0*alpha0)*excited_state).normalized(), psi;
+  for (double tjump = 0.; tjump < tmax; tjump += dt) {
+    psi = psi0;
+    for (double t = 0.; t < tmax; t += dt) {
+      out_jump << t << " " << abs(real(psi.dot(ground_state))) << endl;
+      if (t > tjump) {
+        psi -= .5*(Gamma(t, kappa) + C(psi.normalized(), t, kappa, theta))*psi*dt;
+        psi.normalize();
+      }
+    }
+  }
+  // Same but with the orthogonal (2 jumps)
+  psi0 = (sqrt(1.-alpha0*alpha0)*ground_state - alpha0*excited_state).normalized();
   for (double tjump = 0.; tjump < tmax; tjump += dt) {
     psi = psi0;
     for (double t = 0.; t < tmax; t += dt) {
