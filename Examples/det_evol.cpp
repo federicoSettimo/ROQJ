@@ -35,9 +35,9 @@ MatrixXcd Gamma (double t, double kappa) {
   return gamma_p(t)*sigma_m*sigma_p + gamma_m(t)*sigma_p*sigma_m + gamma_z(t,kappa)*id;
 }
 
-double alpha0 = .2;
+double alpha0 = .95;
 
-MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
+/*MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
   MatrixXcd CC = MatrixXcd::Zero(2,2);
   double ag = abs(psi.dot(ground_state)), ae = sqrt(1.-ag*ag), gz = gamma_z(t,kappa), gp = gamma_p(t), gm = gamma_m(t);
 
@@ -58,6 +58,38 @@ MatrixXcd C (const Vector2cd &psi, double t, double kappa, double theta) {
   CC(0,0) = c1;
   CC(1,1) = c2;
   return CC;
+}*/
+
+// With a refined version of C
+MatrixXcd C (const VectorXcd &psi, double t, double kappa, double theta) {
+  double ag = abs(psi.dot(ground_state)), ae = sqrt(1.-ag*ag), gz = gamma_z(t,kappa), gp = gamma_p(t), gm = gamma_m(t);
+
+  double eps = -.5*sqrt(gm*gp) - gz;
+  eps = eps > 0. ? eps : 0.;
+
+  if (abs(ag) < 0.01) {
+    double mu = sqrt(gamma_p(t)*gamma_m(t)) + 2.*eps;
+    double c3 = gamma_z(t,kappa) - mu;
+    return 2.*mu*sigma_p*sigma_m + c3*id;
+  }
+
+  if (abs(1.-ag) < 0.01) {
+    double mu = 2.*gz;
+    double c3 = gamma_z(t,kappa) - mu;
+    return 2.*mu*sigma_p*sigma_m + c3*id;
+  }
+
+  MatrixXcd CC = MatrixXcd::Zero(2,2);
+  if (abs(ag-alpha0) < .01) theta = M_PI-theta;
+
+  double c1 = (-(ae*pow(ag,2)*(gp - 3.*gz)) + pow(ae,3)*(gm - gz) - ae*(pow(ae,2)*(gm + gz) + pow(ag,2)*(gp + 3.*gz))*cos(2.*theta) + 
+     2*ag*(pow(ag,2)*gp + pow(ae,2)*gz)*sin(2*theta))/(4.*ae*pow(ae*cos(theta) - ag*sin(theta),2));
+  double c2 = -0.25*(pow(ae,2)*ag*(gm - 3.*gz) + pow(ag,3)*(-gp + gz) - ag*(pow(ag,2)*(gp + gz) + pow(ae,2)*(gm + 3.*gz))*cos(2.*theta) - 
+      2*ae*(pow(ae,2)*gm + pow(ag,2)*gz)*sin(2.*theta))/(ag*pow(ae*cos(theta) - ag*sin(theta),2));
+
+  CC(0,0) = c1;
+  CC(1,1) = c2;
+  return CC;
 }
 
 Matrix2cd projector (const Vector2cd &psi) {return psi*psi.adjoint();}
@@ -68,11 +100,11 @@ int main (int argc, char *argv[]) {
 
   double kappa = 1.3, theta = acos(alpha0); // Theta = angle of the fixed state
   double tmax = 4., dt = 0.01, dalpha = 0.005;
-  int Nsteps = (int)(tmax/dt)+1, Nstates = (int)(1./dalpha)-1;
+  int Nsteps = (int)(tmax/dt)+1, Nstates = (int)(1./dalpha);
   out << Nsteps << endl << Nstates << endl << alpha0 << endl;
 
   // For 0,1 not ok: modify later
-  for (double alpha = dalpha; alpha < 1.; alpha += dalpha) {
+  for (double alpha = 0.; alpha <= 1.; alpha += dalpha) {
     Vector2cd psi = (alpha*ground_state + sqrt(1.-alpha*alpha)*excited_state).normalized();
     for (double t = 0.; t < tmax; t += dt) {
       out << t << " " << abs(real(psi.dot(ground_state))) << endl;
