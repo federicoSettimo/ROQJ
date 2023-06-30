@@ -16,6 +16,21 @@ ph_cov_nM: roqj.o Examples/ph_cov_nM.cpp
 	./Examples/ph_cov_nM.x
 	python3 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
 
+ph_cov_nM_fixed_jump: roqj.o Examples/ph_cov_nM_fixed_jump.cpp
+	g++ Examples/ph_cov_nM_fixed_jump.cpp roqj.o -o Examples/ph_cov_nM_fixed_jump.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_nM_fixed_jump.x
+	python3 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
+
+gamma_p_nM: roqj.o Examples/gamma_p_nM.cpp
+	g++ Examples/gamma_p_nM.cpp roqj.o -o Examples/gamma_p_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/gamma_p_nM.x
+	python3 Examples/plot.py "$$\gamma_{+}<0$$" "$$tr[\rho \sigma_z]$$"
+
+det_evol_gamma_p: Examples/det_evol_gamma_p.cpp
+	g++ Examples/det_evol_gamma_p.cpp -o Examples/det_evol_gamma_p.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_evol_gamma_p.x
+	python3.10 Examples/det_evol_gamma_p.py
+
 ph_cov_orthogonal: roqj.o Examples/ph_cov_orthogonal.cpp
 	g++ Examples/ph_cov_orthogonal.cpp roqj.o -o Examples/ph_cov_orthogonal.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_orthogonal.x
@@ -25,6 +40,21 @@ kappa_max_nonP: Examples/kappa_max_nonP.cpp
 	g++ Examples/kappa_max_nonP.cpp -o Examples/kappa_max_nonP.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/kappa_max_nonP.x
 	python3 Examples/kappa_max_nonP.py
+
+eigs_non_P_ph_cov: Examples/eigs_non_P_ph_cov.cpp
+	g++ Examples/eigs_non_P_ph_cov.cpp -o Examples/eigs_non_P_ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/eigs_non_P_ph_cov.x
+	python3 Examples/eigs_non_P_ph_cov.py
+
+det_nM: Examples/det_nM.cpp
+	g++ Examples/det_nM.cpp -o Examples/det_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_nM.x
+	python3 Examples/plot_det_nM.py
+
+det_evol: Examples/det_evol.cpp
+	g++ Examples/det_evol.cpp -o Examples/det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_evol.x
+	python3 Examples/det_evol.py
 
 3d_ph_cov: roqj.o Examples/3d_ph_cov.cpp
 	g++ Examples/3d_ph_cov.cpp roqj.o -o Examples/3d_ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
