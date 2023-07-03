@@ -481,6 +481,7 @@ VectorXd qubit_roqj::run_single_iterations (bool verbose) const {
         psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt;
       }
       psi[i] = psi[i].normalized();
+      if(real(psi[i](0)) < 0.) psi[i] = -psi[i];
     }
     // Storing the observable
     observables[n_observable] = observable(rho);
