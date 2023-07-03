@@ -33,7 +33,7 @@ MatrixXcd Gamma (double t) {
 
 MatrixXcd C (const VectorXcd &psi, double t) {
   Vector2cd cpsi = psi;
-  if (real(psi(0)) < 0.) cpsi = -cpsi;
+  if (real(psi(0)) < 0.) cpsi -= psi;
   double a = real(cpsi(1)), cp, cm; // a = <psi|->
   Matrix2cd CC = MatrixXcd::Zero(2,2);
   double a2 = norm(a), gm = gamma_m(t), gp = gamma_p(t), gz = gamma_z(t);
@@ -91,13 +91,13 @@ MatrixXcd C (const VectorXcd &psi, double t) {
 double observable (const MatrixXcd &rho) {return real((rho*sigma_z_pm).trace());}
 
 int main () {
-  double tmin = 0., tmax = 3., dt = 0.01, threshold = 1e-10;
-  int N_ensemble = 1000, Ncopies = 1, dimH = 2, Ntraj = 10;
+  double tmin = 0., tmax = 3., dt = 0.001, threshold = 1e-3;
+  int N_ensemble = 500, Ncopies = 3, dimH = 2, Ntraj = 15;
   bool printTraj = true;
 
   qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
   Vector2cd initialState;
-  initialState << 0.2, 0.6;
+  initialState << 0.2, -0.3;
   jump.set_initial_state(initialState);
 
   jump.run();
