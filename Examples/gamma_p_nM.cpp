@@ -105,5 +105,11 @@ int main () {
   jump.get_observable("average.txt");
   jump.get_error_observable("error.txt");
 
+  // Plotting the functions
+  ofstream out;
+  out.open("functions.txt");
+  for (double t = tmin; t < tmax; t += dt)
+    out << gamma_p(t) << " " << gamma_m(t) << " " << gamma_z(t) << endl;
+
   return 0;
 }

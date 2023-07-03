@@ -24,7 +24,7 @@ ph_cov_nM_fixed_jump: roqj.o Examples/ph_cov_nM_fixed_jump.cpp
 gamma_p_nM: roqj.o Examples/gamma_p_nM.cpp
 	g++ Examples/gamma_p_nM.cpp roqj.o -o Examples/gamma_p_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/gamma_p_nM.x
-	python3 Examples/plot.py "$$\gamma_{+}<0$$" "$$tr[\rho \sigma_z]$$"
+	python3.10 Examples/plot_gamma_p.py "$$\gamma_{+}<0$$" "$$ tr[\rho \sigma_z]$$"
 
 det_evol_gamma_p: Examples/det_evol_gamma_p.cpp
 	g++ Examples/det_evol_gamma_p.cpp -o Examples/det_evol_gamma_p.x -std=c++20 -O3 -ffast-math -fno-math-errno
