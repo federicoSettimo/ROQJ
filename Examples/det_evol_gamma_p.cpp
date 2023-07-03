@@ -44,7 +44,7 @@ Matrix2cd Gamma (double t) {
 
 Matrix2cd C (const VectorXcd &psi, double t) {
   Vector2cd cpsi = psi;
-  if (real(psi(0)) < 0.) cpsi -= cpsi;
+  if (real(psi(0)) < 0.) cpsi -= psi;
   double a = real(cpsi(1)), cp, cm; // a = <psi|->
   Matrix2cd CC = MatrixXcd::Zero(2,2);
   double a2 = norm(a), gm = gamma_m(t), gp = gamma_p(t), gz = gamma_z(t);
@@ -106,14 +106,15 @@ int main (int argc, char *argv[]) {
   out.open("det_evol.txt");
   feigs.open("eigs.txt");
 
-  double tmax = 4., dt = 0.01, dalpha = 0.005;
+  double tmax = 4., dt = 0.001, dalpha = 0.005;
   int Nsteps = (int)(tmax/dt)+1, Nstates = (int)(1./dalpha);
   out << Nsteps << endl << 2*Nstates << endl;
 
+  cout << "Simulating the deterministic evolution...\n";
   for (double alpha = -1.; alpha <= 1.; alpha += dalpha) {
     Vector2cd psi = alpha*minus_state + sqrt(1.-alpha*alpha)*plus_state;
     for (double t = 0.; t < tmax; t += dt) {
-      out << t << " " << real((projector(psi)*sigma_z_pm).trace()) << endl;
+      out << t << " " << real((projector(psi)*sigma_z_pm).trace()) << " " << real((projector(psi)*sigma_x_pm).trace()) << endl;
       Matrix2cd rho = projector(psi), R = J(rho,t) + .5*(C(psi,t)*rho + rho*C(psi,t).transpose());
       ComplexEigenSolver<Matrix2cd> eigs;
       eigs.compute(R);
@@ -122,10 +123,12 @@ int main (int argc, char *argv[]) {
 
       psi -= .5*(Gamma(t) + C(psi.normalized(), t))*psi*dt;
       psi.normalize();
+      if (real(psi(0)) < 0.) psi = -psi; // It is fundamental to modify the phase such that real(psi(0)) > 0
     }
   }
 
   // Now det evolution but starting from a jump at some time tjump
+  cout << "Jumps to the first eigenstate...\n";
   ofstream out_jump, feigs_jump;
   out_jump.open("det_evol_jump.txt");
   feigs_jump.open("eigs_jump.txt");
@@ -133,8 +136,8 @@ int main (int argc, char *argv[]) {
   for (double tjump = 0.; tjump < tmax; tjump += dt) {
     psi = psi0;
     for (double t = 0.; t < tmax; t += dt) {
-      out_jump << t << " " << real((projector(psi)*sigma_z_pm).trace()) << endl;
-      Matrix2cd rho = projector(psi), R = J(rho,t) + .5*(C(psi,t)*rho + rho*C(psi,t).transpose());
+      out_jump << t << " " << real((projector(psi)*sigma_z_pm).trace()) << " " << real((projector(psi)*sigma_x_pm).trace()) << endl;
+      Matrix2cd rho = projector(psi), R = J(rho,t) + .5*(C(psi,t)*rho + rho*C(psi,t).adjoint());
       ComplexEigenSolver<Matrix2cd> eigs;
       eigs.compute(R);
       Vector2cd eigval = eigs.eigenvalues();
@@ -143,16 +146,18 @@ int main (int argc, char *argv[]) {
       if (t > tjump) {
         psi -= .5*(Gamma(t) + C(psi.normalized(), t))*psi*dt;
         psi.normalize();
+        if (real(psi(0)) < 0.) psi = -psi;
       }
     }
   }
   // Same but with the orthogonal (2 jumps)
+  cout << "Jumps to the second eigenstate...\n";
   psi0 = minus_state;
   for (double tjump = 0.; tjump < tmax; tjump += dt) {
     psi = psi0;
     for (double t = 0.; t < tmax; t += dt) {
-      out_jump << t << " " << real((projector(psi)*sigma_z_pm).trace()) << endl;
-      Matrix2cd rho = projector(psi), R = J(rho,t) + .5*(C(psi,t)*rho + rho*C(psi,t).transpose());
+      out_jump << t << " " << real((projector(psi)*sigma_z_pm).trace()) << " " << real((projector(psi)*sigma_x_pm).trace()) << endl;
+      Matrix2cd rho = projector(psi), R = J(rho,t) + .5*(C(psi,t)*rho + rho*C(psi,t).adjoint());
       ComplexEigenSolver<Matrix2cd> eigs;
       eigs.compute(R);
       Vector2cd eigval = eigs.eigenvalues();
@@ -161,6 +166,7 @@ int main (int argc, char *argv[]) {
       if (t > tjump) {
         psi -= .5*(Gamma(t) + C(psi.normalized(), t))*psi*dt;
         psi.normalize();
+        if (real(psi(0)) < 0.) psi = -psi;
       }
     }
   }
