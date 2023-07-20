@@ -31,6 +31,26 @@ det_evol_gamma_p: Examples/det_evol_gamma_p.cpp
 	./Examples/det_evol_gamma_p.x
 	python3.10 Examples/det_evol_gamma_p.py
 
+det_evol_gamma_pm: Examples/det_evol_gamma_pm.cpp
+	g++ Examples/det_evol_gamma_pm.cpp -o Examples/det_evol_gamma_pm.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_evol_gamma_pm.x
+	python3.10 Examples/det_evol_gamma_pm.py
+
+gamma_pm_nM: roqj.o Examples/gamma_pm_nM.cpp
+	g++ Examples/gamma_pm_nM.cpp roqj.o -o Examples/gamma_pm_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/gamma_pm_nM.x
+	python3.10 Examples/plot_gamma_pm.py "$$\gamma_{\pm}<0$$" "$$ tr[\rho \sigma_z]$$"
+
+plot_nM_gp: Examples/plot_nM_gp.cpp
+	g++ Examples/plot_nM_gp.cpp -o Examples/plot_nM_gp.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/plot_nM_gp.x
+	python3.10 Examples/plot_nM_gp.py
+
+PD: Examples/PD.cpp
+	g++ Examples/PD.cpp -o Examples/PD.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/PD.x
+	python3.10 Examples/PD.py
+
 ph_cov_orthogonal: roqj.o Examples/ph_cov_orthogonal.cpp
 	g++ Examples/ph_cov_orthogonal.cpp roqj.o -o Examples/ph_cov_orthogonal.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_orthogonal.x
