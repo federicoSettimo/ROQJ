@@ -19,7 +19,7 @@ ph_cov_nM: roqj.o Examples/ph_cov_nM.cpp
 ph_cov_nM_fixed_jump: roqj.o Examples/ph_cov_nM_fixed_jump.cpp
 	g++ Examples/ph_cov_nM_fixed_jump.cpp roqj.o -o Examples/ph_cov_nM_fixed_jump.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_nM_fixed_jump.x
-	python3 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
+	python3.10 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
 
 gamma_p_nM: roqj.o Examples/gamma_p_nM.cpp
 	g++ Examples/gamma_p_nM.cpp roqj.o -o Examples/gamma_p_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -40,6 +40,11 @@ gamma_pm_nM: roqj.o Examples/gamma_pm_nM.cpp
 	g++ Examples/gamma_pm_nM.cpp roqj.o -o Examples/gamma_pm_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/gamma_pm_nM.x
 	python3.10 Examples/plot_gamma_pm.py "$$\gamma_{\pm}<0$$" "$$ tr[\rho \sigma_z]$$"
+
+gamma_pm_2states: roqj.o Examples/gamma_pm_2states.cpp
+	g++ Examples/gamma_pm_2states.cpp roqj.o -o Examples/gamma_pm_2states.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/gamma_pm_2states.x
+	python3.10 Examples/plot_gamma_pm.py "$$\gamma_{\pm}<0$$" "$$ tr[\rho \sigma_x]$$"
 
 plot_nM_gp: Examples/plot_nM_gp.cpp
 	g++ Examples/plot_nM_gp.cpp -o Examples/plot_nM_gp.x -std=c++20 -O3 -ffast-math -fno-math-errno
