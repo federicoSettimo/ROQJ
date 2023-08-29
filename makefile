@@ -51,6 +51,11 @@ plot_nM_gp: Examples/plot_nM_gp.cpp
 	./Examples/plot_nM_gp.x
 	python3.10 Examples/plot_nM_gp.py
 
+target_state_unravelling: Examples/target_state_unravelling.cpp
+	g++ Examples/target_state_unravelling.cpp -o Examples/target_state_unravelling.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/target_state_unravelling.x
+	python3.10 Examples/target_state_unravelling.py
+
 PD: Examples/PD.cpp
 	g++ Examples/PD.cpp -o Examples/PD.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/PD.x
