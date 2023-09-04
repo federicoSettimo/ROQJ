@@ -148,6 +148,9 @@ roqj_mixed.o: roqj_mixed.h roqj_mixed.cpp
 roqj_gen_qubit.o: roqj_gen_qubit.cpp roqj_gen_qubit.h
 	g++ roqj_gen_qubit.cpp -c -o roqj_gen_qubit.o -std=c++20 -O3 -ffast-math -fno-math-errno
 
+roqj_state.o: roqj_state.h roqj_state.cpp
+	g++ roqj_state.cpp -c -o roqj_state.o -std=c++20 -O3 -ffast-math -fno-math-errno
+
 ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_pop.o
 	g++ Examples/ph_cov_pop.cpp roqj.o roqj_pop.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_pop.x
