@@ -128,12 +128,6 @@ public:
 
   // Performs the jump with only 2 possible channels
   VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi) const override;
-
-  // Runs with the 2-channel jumps
-  void run ();
-
-  // Single iteration with the 2-channel jumps
-  VectorXd run_single_iterations (bool verbose = true) const;
 };
 
 
