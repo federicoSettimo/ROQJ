@@ -207,8 +207,8 @@ VectorXd roqj::get_det_trajectory (string file_out) const {
   if (file_out != "")
     out.open(file_out);
   for (double t = _t_i; t <= _t_f; t += _dt) {
-    MatrixXcd K = H(t) - 0.5*complex<double>(0.,1.)*Gamma(t);
-    psi -=  K*psi*complex<double>(0.,1.)*_dt + .5*_dt*Phi(psi,t);
+    MatrixXcd K = H(t) - 0.5*I*Gamma(t);
+    psi -=  K*psi*I*_dt + .5*_dt*Phi(psi,t);
     psi = psi.normalized();
     double x = observable(projector(psi));
     traj[i] = x;
@@ -270,8 +270,8 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       if (z < real(R.trace())*_dt || real(R.trace()) < 0) // Jump
         psi[i] = this->jump(R,z,psi[i]);
       else {// Free evolution
-        MatrixXcd K = H(t) - 0.5*complex<double>(0.,1.)*Gamma(t);
-        psi[i] -= K*psi[i]*complex<double>(0.,1.)*_dt + .5*_dt*Phi(psi[i],t);
+        MatrixXcd K = H(t) - 0.5*I*Gamma(t);
+        psi[i] -= K*psi[i]*I*_dt + .5*_dt*Phi(psi[i],t);
       }
       psi[i] = psi[i].normalized();
       for (int j = 0; j < _dim_Hilbert_space; ++j) {
@@ -393,6 +393,7 @@ void qubit_roqj::set_initial_state (const VectorXcd &psi) {
     return;
   }
   _initial_state = psi.normalized();
+  return;
 }
 
 // Default initial state

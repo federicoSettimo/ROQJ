@@ -112,8 +112,8 @@ public:
 
 // ------------------------- Qubit ROQJ class -------------------------
 class qubit_roqj : public roqj {
-protected:
-  Vector2cd _initial_state;
+//protected:
+  //Vector2cd _initial_state;
 public:
   /* 
     Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose
