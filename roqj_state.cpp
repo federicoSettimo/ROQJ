@@ -254,6 +254,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
     // Cycle on the ensemble members
     for (int i = 0; i < _N_states; ++i) {
+      if (real(psi[i](0)) < 0. || (real(psi[i](0)) < .001 && real(psi[i](1)) < 0.)) psi[i] = -psi[i];
       // Prints the trajectories
       if (verbose && i < _N_traj_print && _print_trajectory)
         traj << observable(projector(psi[i])) << " ";
@@ -406,12 +407,16 @@ VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi) 
   VectorXcd eigval = eigs.eigenvalues();
   MatrixXcd eigvec = eigs.eigenvectors();
 
+  VectorXcd phi1 = eigvec.col(0), phi2 = eigvec.col(1);
+  if (real(phi1(0)) < 0. || (real(phi1(0)) < .0001 && real(phi1(1)) < 0.)) phi1 = -phi1;
+  if (real(phi2(0)) < 0. || (real(phi2(0)) < .0001 && real(phi2(1)) < 0.)) phi2 = -phi2;
+
   double lambda1 = real(eigval[0]), lambda2 = real(eigval[1]), pjump1 = lambda1*_dt;
   if (lambda1 >= -_threshold && lambda2 >= -_threshold) {// Normal jump
     // With probability pjump1, it jumps to the first eigenstate of R
     if (z <= pjump1)
-      return eigvec.col(0);
-    else return eigvec.col(1);
+      return phi1;
+    else return phi2;
   }
   else {// Reverse jump ----- Not implemented??
     cerr << "Negative rate - reverse jump. NOT IMPLEMENTED\n";
