@@ -61,6 +61,11 @@ ph_cov_nM_state: Examples/ph_cov_nM_state.cpp roqj_state.o
 	./Examples/ph_cov_nM_state.x
 	python3.10 Examples/plot.py
 
+ph_cov_nM_gpm_state: Examples/ph_cov_nM_gpm_state.cpp roqj_state.o
+	g++ Examples/ph_cov_nM_gpm_state.cpp roqj_state.o -o Examples/ph_cov_nM_gpm_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_nM_gpm_state.x
+	python3.10 Examples/plot.py
+
 det_evol_state: Examples/det_evol_state.cpp
 	g++ Examples/det_evol_state.cpp -o Examples/det_evol_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/det_evol_state.x
