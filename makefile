@@ -56,6 +56,26 @@ target_state_unravelling: Examples/target_state_unravelling.cpp
 	./Examples/target_state_unravelling.x
 	python3.10 Examples/target_state_unravelling.py
 
+ph_cov_nM_state: Examples/ph_cov_nM_state.cpp roqj_state.o
+	g++ Examples/ph_cov_nM_state.cpp roqj_state.o -o Examples/ph_cov_nM_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_nM_state.x
+	python3.10 Examples/plot.py
+
+det_evol_state: Examples/det_evol_state.cpp
+	g++ Examples/det_evol_state.cpp -o Examples/det_evol_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_evol_state.x
+	python3.10 Examples/det_evol_state.py
+
+2qubits_separable: Examples/2qubits_separable.cpp roqj_state.o
+	g++ Examples/2qubits_separable.cpp roqj_state.o -o Examples/2qubits_separable.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/2qubits_separable.x
+	python3.10 Examples/plot.py
+
+2qubits_separable1: Examples/2qubits_separable1.cpp roqj_state.o
+	g++ Examples/2qubits_separable1.cpp roqj_state.o -o Examples/2qubits_separable1.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/2qubits_separable1.x
+	python3.10 Examples/plot.py	
+
 PD: Examples/PD.cpp
 	g++ Examples/PD.cpp -o Examples/PD.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/PD.x
