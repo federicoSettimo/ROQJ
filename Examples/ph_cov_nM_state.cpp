@@ -11,7 +11,7 @@ vector<Vector2cd> psi_t((int)((tmax-tmin)/dt+1));
 
 double gamma_p (double t) {return exp(-.5*t);}
 double gamma_m (double t) {return exp(-.25*t);}
-double gamma_z (double t) {return 1.9*exp(-3.*t/8.)*cos(2.*t)*.5;}
+double gamma_z (double t) {return 1.3*exp(-3.*t/8.)*cos(2.*t)*.5;}
 
 //double b (double t) {return 0.5*(1. + erf(2.*sqrt(2.)*(t-1.)));}
 double b (double t) {return 0.;}
@@ -38,19 +38,30 @@ VectorXcd Phi (const VectorXcd &psi, double t) {
   // From |0>
   Vector2cd target = psi_t[(int)(t/dt)+1]; // Target = state at the next timestep
   double b = real(target(1)), b2 = b*b, sqb = sqrt(1.-b*b);
+  //double b = 0., b2 = b*b, sqb = sqrt(1.-b*b);
   return 2.*b*gp/sqb*excited_state - (gz - b2*(gp+gz))/(sqb*sqb)*ground_state;
+
+  // Just fixed basis
+  /*if (a2 > .5)
+    return sq*(gm - a2*gm + 3.*a2*gz)/a2*plus_state + (a*(gm-gz) - gm/a)*minus_state;
+  return (a2*(gz-gp) - gz)/sq*plus_state + (a2*a*(gp-3.*gz) + 3.*a*gz)/(sq*sq)*minus_state;*/
+  /*if (a2 > .5)
+    return ((sqrt(1 - pow(a,2))*(gm - pow(a,2)*gm + 3*pow(a,2)*gz))/pow(a,2))*excited_state
+      + (-(gm/a) + a*(gm - gz))*ground_state;
+  return ((-gz + pow(a,2)*(-gp + gz))/sqrt(1 - pow(a,2)))*excited_state 
+    + (-((pow(a,3)*(gp - 3*gz) + 3*a*gz)/(-1 + pow(a,2))))*ground_state;*/
 }
 
 //double observable (const MatrixXcd &rho) {return abs(rho(0,1));}
-double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
+double observable (const MatrixXcd &rho) {return real((rho*sigma_x).trace());}
 
 int main () {
-  int N_ensemble = 10000, Ncopies = 3, dimH = 2, Ntraj = 10;
+  int N_ensemble = 1000, Ncopies = 3, dimH = 2, Ntraj = 10;
   bool printTraj = true;
 
   qubit_roqj jump(N_ensemble, tmin, tmax, dt, Ncopies, printTraj, Ntraj, true, threshold);
   Vector2cd initialState;
-  initialState << 0.2, 0.1;
+  initialState << 0.8, 0.7;
   jump.set_initial_state(initialState);
 
   // First thing: generating the deterministic evolution
