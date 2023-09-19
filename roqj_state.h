@@ -29,7 +29,7 @@ const double t_i_default = 0., t_f_default = 10., dt_default = 0., threshold_def
 extern MatrixXcd H (double t);
 extern MatrixXcd J (const MatrixXcd &rho, double t);
 extern MatrixXcd Gamma (double t);
-extern VectorXcd Phi (const VectorXcd &psi, double t);
+extern VectorXcd Phi (const VectorXcd &psi, double t, bool jumped);
 extern double observable (const MatrixXcd &rho);
 
 // ------------------------- ROQJ class -------------------------

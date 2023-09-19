@@ -208,7 +208,7 @@ VectorXd roqj::get_det_trajectory (string file_out) const {
     out.open(file_out);
   for (double t = _t_i; t <= _t_f; t += _dt) {
     MatrixXcd K = H(t) - 0.5*I*Gamma(t);
-    psi -=  K*psi*I*_dt + .5*_dt*Phi(psi,t);
+    psi -=  K*psi*I*_dt + .5*_dt*Phi(psi,t,false);
     psi = psi.normalized();
     double x = observable(projector(psi));
     traj[i] = x;
@@ -227,8 +227,11 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
   // Allocating _N_states copies of the initial state
   std::vector<VectorXcd> psi;
-  for (int i = 0; i <= _N_states; ++i)
+  vector<bool> jumped(_N_states);
+  for (int i = 0; i <= _N_states; ++i) {
     psi.push_back(_initial_state);
+    jumped[i] = false;
+  }
 
   // Exact solution
   MatrixXcd rho_ex(_dim_Hilbert_space, _dim_Hilbert_space);
@@ -254,7 +257,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
     // Cycle on the ensemble members
     for (int i = 0; i < _N_states; ++i) {
-      if (real(psi[i](0)) < 0. || (real(psi[i](0)) < .001 && real(psi[i](1)) < 0.)) psi[i] = -psi[i];
+      if (real(psi[i](0)) < 0. || (real(psi[i](0)) < .001 && real(psi[i](1)) < 0.)) psi[i] *= -1.;
       // Prints the trajectories
       if (verbose && i < _N_traj_print && _print_trajectory)
         traj << observable(projector(psi[i])) << " ";
@@ -262,17 +265,19 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       // Updates the average
       rho += projector(psi[i])/((double)_N_states);
 
-      VectorXcd Phi_i = Phi(psi[i],t);
-      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(Phi_i*psi[i].adjoint() + psi[i]*Phi_i.adjoint());
+      VectorXcd Phi_i = Phi(psi[i],t,jumped[i]);
+      MatrixXcd R = J(projector(psi[i]),t) + 0.5*(Phi_i*(psi[i].adjoint()) + psi[i]*(Phi_i.adjoint()));
       
       // Draws a random number and calculates whether the evolution is deterministic or via a jump
       double z = (double)rand()/((double)RAND_MAX);
 
-      if (z < real(R.trace())*_dt || real(R.trace()) < 0) // Jump
+      if (z < real(R.trace())*_dt || real(R.trace()) < 0) {// Jump
         psi[i] = this->jump(R,z,psi[i]);
+        jumped[i] = true;
+      }
       else {// Free evolution
         MatrixXcd K = H(t) - 0.5*I*Gamma(t);
-        psi[i] -= K*psi[i]*I*_dt + .5*_dt*Phi(psi[i],t);
+        psi[i] = psi[i] - K*psi[i]*I*_dt - .5*_dt*Phi_i;
       }
       psi[i] = psi[i].normalized();
       for (int j = 0; j < _dim_Hilbert_space; ++j) {
