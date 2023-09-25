@@ -14,7 +14,7 @@ ph_cov_non_P: roqj.o roqj_pop.o Examples/ph_cov_non_P.cpp
 ph_cov_nM: roqj.o Examples/ph_cov_nM.cpp
 	g++ Examples/ph_cov_nM.cpp roqj.o -o Examples/ph_cov_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_nM.x
-	python3 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
+	python3.10 Examples/plot.py "Non-P divisible" "$$\rho_{01}(t)$$" #ph_cov_nM.png
 
 ph_cov_nM_fixed_jump: roqj.o Examples/ph_cov_nM_fixed_jump.cpp
 	g++ Examples/ph_cov_nM_fixed_jump.cpp roqj.o -o Examples/ph_cov_nM_fixed_jump.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -66,10 +66,25 @@ ph_cov_nM_gpm_state: Examples/ph_cov_nM_gpm_state.cpp roqj_state.o
 	./Examples/ph_cov_nM_gpm_state.x
 	python3.10 Examples/plot.py
 
+ph_cov_1bit: Examples/ph_cov_1bit.cpp roqj.o
+	g++ Examples/ph_cov_1bit.cpp roqj.o -o Examples/ph_cov_1bit.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/ph_cov_1bit.x
+	python3.10 Examples/plot.py
+
+deph_d_dim: roqj_multiple_obs.o Examples/deph_d_dim.cpp
+	g++ Examples/deph_d_dim.cpp roqj_multiple_obs.o -o Examples/deph_d_dim.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/deph_d_dim.x
+	python3.10 Examples/plot_multiple_obs.py
+
 det_evol_state: Examples/det_evol_state.cpp
 	g++ Examples/det_evol_state.cpp -o Examples/det_evol_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/det_evol_state.x
 	python3.10 Examples/det_evol_state.py
+
+det_evol_eigenvalues: Examples/det_evol_eigenvalues.cpp
+	g++ Examples/det_evol_eigenvalues.cpp -o Examples/det_evol_eigenvalues.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/det_evol_eigenvalues.x
+	python3.10 Examples/det_evol_eigenvalues.py
 
 2qubits_separable: Examples/2qubits_separable.cpp roqj_state.o
 	g++ Examples/2qubits_separable.cpp roqj_state.o -o Examples/2qubits_separable.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -79,6 +94,16 @@ det_evol_state: Examples/det_evol_state.cpp
 2qubits_separable1: Examples/2qubits_separable1.cpp roqj_state.o
 	g++ Examples/2qubits_separable1.cpp roqj_state.o -o Examples/2qubits_separable1.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/2qubits_separable1.x
+	python3.10 Examples/plot.py	
+
+driven_gamma_minus: Examples/driven_gamma_minus.cpp roqj_state.o
+	g++ Examples/driven_gamma_minus.cpp roqj_state.o -o Examples/driven_gamma_minus.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_gamma_minus.x
+	python3.10 Examples/plot.py	
+
+driven_gamma_minus_no_det_evol: Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o
+	g++ Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o -o Examples/driven_gamma_minus_no_det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_gamma_minus_no_det_evol.x
 	python3.10 Examples/plot.py	
 
 PD: Examples/PD.cpp
@@ -175,6 +200,9 @@ roqj_gen_qubit.o: roqj_gen_qubit.cpp roqj_gen_qubit.h
 
 roqj_state.o: roqj_state.h roqj_state.cpp
 	g++ roqj_state.cpp -c -o roqj_state.o -std=c++20 -O3 -ffast-math -fno-math-errno
+
+roqj_multiple_obs.o: roqj_multiple_obs.h roqj_multiple_obs.cpp
+	g++ roqj_multiple_obs.cpp -c -o roqj_multiple_obs.o -std=c++20 -O3 -ffast-math -fno-math-errno
 
 ph_cov_pop: Examples/ph_cov_pop.cpp roqj.o roqj_pop.o
 	g++ Examples/ph_cov_pop.cpp roqj.o roqj_pop.o -o Examples/ph_cov_pop.x -std=c++20 -O3 -ffast-math -fno-math-errno
