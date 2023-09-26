@@ -55,7 +55,7 @@ MatrixXcd Gamma (double t) {
 VectorXcd Phi (const VectorXcd &psi, double t) {
   double b = beta(t), gm = gamma_m(t), mu = abs(psi(1))*sgn(real(psi(1))*real(psi(0)));
 
-  if (abs(mu) >= .9909) 
+  if (abs(mu) >= .999) 
     return 0.*excited_state;
 
   if (abs(mu) <= .0001)
@@ -92,7 +92,6 @@ int main () {
     Vector2cd eigval = eigs.eigenvalues();
 
     out << real(eigval(0)) << endl << real(eigval(1)) << endl;
-    cout << real(psi(0)) << ", " << real(psi(1)) << "; " << t << endl;
 
     psi -= I*dt*K*psi + .5*dt*phi;
     psi.normalize();
