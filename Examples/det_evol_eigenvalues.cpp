@@ -32,7 +32,9 @@ static Eigen::VectorXcd excited_state {{1.,0.}};
 static Eigen::VectorXcd plus_state {{1./sqrt(2.),1./sqrt(2.)}};
 static Eigen::VectorXcd minus_state {{1./sqrt(2.),-1./sqrt(2.)}};
 
-double tmin = 0., tmax = 10., dt = 0.001, threshold = 1e-3;
+double sgn (double x) {return x >= 0. ? 1. : -1.;}
+
+double tmin = 0., tmax = 3., dt = 0.0001, threshold = 1e-3;
 vector<Vector2cd> psi_t((int)((tmax-tmin)/dt+1));
 
 double beta (double t) {return 1.;}
@@ -51,15 +53,17 @@ MatrixXcd Gamma (double t) {
 }
 
 VectorXcd Phi (const VectorXcd &psi, double t) {
-  double b = beta(t), gm = gamma_m(t), mu = real(psi(1));
+  double b = beta(t), gm = gamma_m(t), mu = abs(psi(1))*sgn(real(psi(1))*real(psi(0)));
 
-  if (abs(mu) == 1.) 
-    return (-2*b*dt)*excited_state + mu*ground_state;
+  if (abs(mu) >= .9909) 
+    return 0.*excited_state;
 
-  if (abs(mu) == 0.)
-    return 2.*excited_state + (-2*b*dt*(-2 + gm))*ground_state;
+  if (abs(mu) <= .0001)
+    return (-2.*b*gm*dt)*ground_state;
 
-  return (sqrt(1 - pow(mu,2)))*excited_state + (mu - 2*gm*mu + 2*gm*pow(mu,3))*ground_state;
+  return (sqrt(1 - pow(mu,2)))*excited_state + ((2*b*(dt + dt*gm*(-1 + pow(mu,2))))/sqrt(1 - pow(mu,2)) + 
+   mu*(1 + gm*(-2 + 3*dt + 2*pow(mu,2) - 2*dt*pow(mu,2)) + 
+      dt*pow(gm,2)*(-3 + 5*pow(mu,2) - 2*pow(mu,4))))*ground_state;
 }
 
 double observable (const MatrixXcd &rho) {return real((rho*sigma_z).trace());}
@@ -88,9 +92,11 @@ int main () {
     Vector2cd eigval = eigs.eigenvalues();
 
     out << real(eigval(0)) << endl << real(eigval(1)) << endl;
+    cout << real(psi(0)) << ", " << real(psi(1)) << "; " << t << endl;
 
     psi -= I*dt*K*psi + .5*dt*phi;
     psi.normalize();
+    if (real(psi(0)) < 0.) psi = -psi;
   }
   
   return 0;
