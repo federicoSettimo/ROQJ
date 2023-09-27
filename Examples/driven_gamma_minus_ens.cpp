@@ -191,7 +191,7 @@ int main () {
       l_phi = real(eigval(1));
     }
     if (l_phi < 0. || l_perp < 0.)
-      cout << "\tphi, t = " << t << ", mu = " << real(phi[i](1)) << "; eigs: " << l_phi << ", " << l_perp << endl;
+      cout << "phi, t = " << t << ", mu = " << real(phi[i](1)) << "\teigs: " << l_phi << ", " << l_perp << endl;
     l_phi = norm(l_phi)*dt;
     l_perp= norm(l_perp)*dt;
 
@@ -221,7 +221,7 @@ int main () {
       l_phi = real(eigval(1));
     }
     if (l_phi < 0. || l_perp < 0.)
-      cout << "\tphi, t = " << t << ", mu = " << real(phi[i](1)) << "; eigs: " << l_phi << ", " << l_perp << endl;
+      cout << "phi, t = " << t << ", mu = " << real(phi[i](1)) << "\teigs: " << l_phi << ", " << l_perp << endl;
     l_phi = norm(l_phi)*dt;
     l_perp= norm(l_perp)*dt;
 
@@ -247,7 +247,7 @@ int main () {
       l_phi = real(eigval(1));
     }
     if (l_phi < 0. || l_perp < 0.)
-      cout << "\tphi_perp, t = " << t << ", mu = " << real(phi[i](1)) << "; eigs: " << l_phi << ", " << l_perp << endl;
+      cout << "phi_perp, t = " << t << ", mu = " << real(phi[i](1)) << "\teigs: " << l_phi << ", " << l_perp << endl;
     l_phi = norm(l_phi)*dt;
     l_perp= norm(l_perp)*dt;
 
