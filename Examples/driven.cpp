@@ -59,10 +59,34 @@ Matrix2cd comm (const Matrix2cd &A, const Matrix2cd &B) {return A*B - B*A;}
 
 Matrix2cd anticomm (const Matrix2cd &A, const Matrix2cd &B) {return A*B + B*A;}
 
+int Nensemble = 10000;
+
+void jump (double p1, double p2, int &N, int &N1, int &N2) {
+  double z = ((double)rand()/(double)RAND_MAX);
+  if (p1 >= 0. && p2 >= 0.) { // Direct x -> 1,2
+    if (z < p1) {N--; N1++;}
+    else if (z < p1+p2) {N--; N2++;}
+  }
+  else if (p1 >= 0. && p2 < 0.) { // Direct x -> 1, reverse 2 -> x
+    double p_rev_2 = -p2*(double)N2/(double)Nensemble;
+    if (z < p1) {N--; N1++;}
+    else if (z < p1 + p_rev_2) {N++; N2--;}
+  }
+  else if (p2 >= 0. && p1 < 0.) { // Direct x -> 2, reverse 1 -> x
+    double p_rev_1 = -p1*(double)N1/(double)Nensemble;
+    if (z < p2) {N--; N2++;}
+    else if (z < p2 + p_rev_1) {N++; N1--;}
+  }
+  else { // Reverse 1,2 -> x
+    double p_rev_1 = -p1*(double)N1/(double)Nensemble, p_rev_2 = -p2*(double)N2/(double)Nensemble;
+    if (z < p_rev_1) {N++; N1--;}
+    else if (z < p_rev_1 + p_rev_2) {N++, N1--;}
+  }
+}
+
 int main () {
-  int Nensemble = 10000, Npsi = Nensemble, Ng = 0, Ne = 0, Np = 0, Nm = 0;
+  int Npsi = Nensemble, Ng = 0, Ne = 0, Np = 0, Nm = 0;
   double tmin = 0., tmax = 10., dt = 0.01, threshold = 1e-3;
-  double pe, pg, pp, pm;
 
   ofstream out;
   out.open("driven.txt");
@@ -81,6 +105,7 @@ int main () {
     double a = real(psi(1)), gp = gamma_p(t), gm = gamma_m(t), a2 = a*a, b = beta(t);
     // Fractions of states
     double fpsi = (double)Npsi/(double)Nensemble, fp = (double)Np/(double)Nensemble, fm = (double)Nm/(double)Nensemble, fg = (double)Ng/(double)Nensemble, fe = (double)Ne/(double)Nensemble;
+
     rho = fpsi*projector(psi) + fg*projector(ground_state) + fe*projector(excited_state) + fp*projector(plus_state) + fm*projector(minus_state);
     out << observable(rho) << " " << observable(exact) << " " << observable(projector(psi)) << endl;
     out << fpsi << " " << fg << " " << fe << " " << fp << " " << fm << endl;
@@ -89,119 +114,27 @@ int main () {
     // Updating exact
     exact += dt*(-I*comm(H(t),exact) + J(exact,t) - .5*anticomm(Gamma(t),exact));
 
-    // Direct jumps from psi
-    pe = a2*gp*dt;
-    pg = (1.-a2)*gm*dt;
-    for (int i = 0; i < Npsi_old; ++i) {
-      double z = ((double)rand()/(double)RAND_MAX);
-      if (z < pe) {Npsi--; Ne++;}
-      else if (z < pe+pg) {Npsi--; Ng++;}
-    }
-    // Update psi
+    // Updating psi
     Matrix2cd K = H(t) - .5*I*Gamma(t);
     psi -= I*dt*K*psi;
     psi.normalize();
-    if (pe < -threshold || pg < -threshold) cerr << "Reverse jump from psi, t = " << t << "\t" << pe << ", " << pg << endl;
 
-    // From g (positive rates for b < gp/2)
-    pp = (-2.*b + gp)*dt;
-    pm = (2.*b + gp)*dt;
-    for (int i = 0; i < Ng_old; ++i) {
-      double z = ((double)rand()/(double)RAND_MAX);
-      if (z < pp) {Ng--; Np++;}
-      else if (z < pp+pm) {Ng--; Nm++;}
-    }
-    if (pp < -threshold || pm < -threshold) cerr << "Reverse jump from g, t = " << t << "\t" << pp << ", " << pm << endl;
+    double psi_e = a2*gp*dt, psi_g = (1.-a2)*gm*dt;
+    double g_p = (-2.*b + gp)*dt, g_m = (2.*b + gp)*dt; 
+    double e_p = (2.*b + gm)*dt, e_m = (-2.*b + gm)*dt;
+    double p_g = (2.*b + gm - .5*gp)*dt, p_e = (-2.*b + gp - .5*gm)*dt;
+    double m_g = (-2.*b + gm - .5*gp)*dt, m_e = (2.*b + gp - .5*gm)*dt;
 
-    // From e (positive rates for b < gm/2)
-    pp = (2.*b + gm)*dt;
-    pm = (-2.*b + gm)*dt;
-    for (int i = 0; i < Ne_old; ++i) {
-      double z = ((double)rand()/(double)RAND_MAX);
-      if (z < pp) {Ne--; Np++;}
-      else if (z < pp+pm) {Ne--; Nm++;}
-    }
-    if (pp < -threshold || pm < -threshold) cerr << "Reverse jump from e, t = " << t << "\t" << pp << ", " << pm << endl;
-
-    // Assuming that reverse jumps only happens from +- and not from ge
-
-    // From + (positive rates for 2b < gp - gm/2)
-    pg = (2.*b + gm - .5*gp)*dt;
-    pe = (-2.*b + gp - .5*gm)*dt;
-    if (pe > 0. && pg > 0.) {
-      for (int i = 0; i < Np_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pg) {Np--; Ng++;}
-        else if (z < pg+pe) {Np--; Ne++;}
-      }
-    }
-    else if (pe > 0. && pg < 0.) {
-      // + -> e dir, g -> + reverse
-      double p_rev = -pg*fg;
-      for (int i = 0; i < Np_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pe) {Np--; Ne++;}
-        else if (z < pe+p_rev) {Np++; Ng--;}
-      }
-    }
-    else if (pe < 0. && pg > 0.) {
-      // + -> g dir, e -> + reverse
-      double p_rev = -pe*fe;
-      for (int i = 0; i < Np_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pg) {Np--; Ng++;}
-        else if (z < pg+p_rev) {Np++; Ne--;}
-      }
-    }
-    else {
-      // e,g -> + reverse
-      double p_rev_e = -pe*fe, p_rev_g = -pg*fg;
-      for (int i = 0; i < Np_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < p_rev_g) {Ng--; Np++;}
-        else if (z < p_rev_g+p_rev_e) {Np++; Ne--;}
-      }
-    }
-    //if (pg < -threshold || pe < -threshold) cerr << "Reverse jump from +, t = " << t << "\t" << pg << ", " << pe << endl;
-
-    // From - (positive rates for 2b < gp - gm/2)
-    pg = (-2.*b + gm - .5*gp)*dt;
-    pe = (2.*b + gp - .5*gm)*dt;
-    if (pe > 0. && pg > 0.) {
-      for (int i = 0; i < Nm_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pg) {Nm--; Ng++;}
-        else if (z < pg+pe) {Nm--; Ne++;}
-      }
-    }
-    else if (pe > 0. && pg < 0.) {
-      // + -> e dir, g -> + reverse
-      double p_rev = -pg*fg;
-      for (int i = 0; i < Nm_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pe) {Nm--; Ne++;}
-        else if (z < pe+p_rev) {Nm++; Ng--;}
-      }
-    }
-    else if (pe < 0. && pg > 0.) {
-      // + -> g dir, e -> + reverse
-      double p_rev = -pe*fe;
-      for (int i = 0; i < Nm_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < pg) {Nm--; Ng++;}
-        else if (z < pg+p_rev) {Nm++; Ne--;}
-      }
-    }
-    else {
-      // e,g -> + reverse
-      double p_rev_e = -pe*fe, p_rev_g = -pg*fg;
-      for (int i = 0; i < Nm_old; ++i) {
-        double z = ((double)rand()/(double)RAND_MAX);
-        if (z < p_rev_g) {Ng--; Nm++;}
-        else if (z < p_rev_g+p_rev_e) {Nm++; Ne--;}
-      }
-    }
-    //if (pg < -threshold || pe < -threshold) cerr << "Reverse jump from -, t = " << t << "\t" << pg << ", " << pe << endl;
+    for (int i = 0; i < Npsi_old; ++i) // psi
+      jump(psi_e, psi_g, Npsi, Ne, Ng);
+    for (int i = 0; i < Ng_old; ++i) // g
+      jump(g_p, g_m, Ng, Np, Nm);
+    for (int i = 0; i < Ne_old; ++i) // e
+      jump(e_p, e_m, Ne, Np, Nm);
+    for (int i = 0; i < Np_old; ++i) // +
+      jump(p_e, p_g, Np, Ne, Ng);
+    for (int i = 0; i < Nm_old; ++i) // -
+      jump(m_e, m_g, Nm, Ne, Ng);
   }
 
   return 0;
