@@ -21,9 +21,23 @@ Vector2cd ground_state {{0.,1.}}, excited_state {{1.,0.}}, plus_state {{1./sqrt(
 
 MatrixXcd projector (const VectorXcd &psi) {return psi*psi.adjoint();}
 
+// No rev
+/*double gamma_m (double t) {return 1.;}
+double gamma_p (double t) {return .5*exp(-t)*cos(3.*t)+.9;}
+double beta (double t) {
+  double gp = gamma_p(t), gm = gamma_m(t);
+  return .5*min(gp-.5*gm, gm-.5*gp);
+}*/
+// Rev from pm
+/*double gamma_m (double t) {return .5*(cos(t)+1.);}
+double gamma_p (double t) {return .5*(-cos(t)+1.);}
+double beta (double t) {
+  double gp = gamma_p(t), gm = gamma_m(t);
+  return .5*min(gp,gm);
+}*/
 double gamma_m (double t) {return 1.;}
-double gamma_p (double t) {return .9;}
-double beta (double t) {return .2;}
+double gamma_p (double t) {return .5*(tanh(.5*t)+1);}
+double beta (double t) {return .5*gamma_p(t);}
 
 Matrix2cd H (double t) {
   return beta(t)*sigma_y;
@@ -87,47 +101,107 @@ int main () {
     Matrix2cd K = H(t) - .5*I*Gamma(t);
     psi -= I*dt*K*psi;
     psi.normalize();
-    if (pe < 0. || pg < 0.) cerr << "Error in psi, t = " << t << "\t" << pe << ", " << pg << endl;
+    if (pe < -threshold || pg < -threshold) cerr << "Reverse jump from psi, t = " << t << "\t" << pe << ", " << pg << endl;
 
     // From g (positive rates for b < gp/2)
-    pp = -2.*b + gp;
-    pm = 2.*b + gp;
+    pp = (-2.*b + gp)*dt;
+    pm = (2.*b + gp)*dt;
     for (int i = 0; i < Ng_old; ++i) {
       double z = ((double)rand()/(double)RAND_MAX);
       if (z < pp) {Ng--; Np++;}
-      else if (z < pp+pm) {Ng--; Np++;}
+      else if (z < pp+pm) {Ng--; Nm++;}
     }
-    if (pp < 0. || pm < 0.) cerr << "Error in g, t = " << t << "\t" << pp << ", " << pm << endl;
+    if (pp < -threshold || pm < -threshold) cerr << "Reverse jump from g, t = " << t << "\t" << pp << ", " << pm << endl;
 
     // From e (positive rates for b < gm/2)
-    pp = 2.*b + gm;
-    pm = -2.*b + gm;
+    pp = (2.*b + gm)*dt;
+    pm = (-2.*b + gm)*dt;
     for (int i = 0; i < Ne_old; ++i) {
       double z = ((double)rand()/(double)RAND_MAX);
       if (z < pp) {Ne--; Np++;}
-      else if (z < pp+pm) {Ne--; Np++;}
+      else if (z < pp+pm) {Ne--; Nm++;}
     }
-    if (pp < 0. || pm < 0.) cerr << "Error in e, t = " << t << "\t" << pp << ", " << pm << endl;
+    if (pp < -threshold || pm < -threshold) cerr << "Reverse jump from e, t = " << t << "\t" << pp << ", " << pm << endl;
+
+    // Assuming that reverse jumps only happens from +- and not from ge
 
     // From + (positive rates for 2b < gp - gm/2)
-    pg = 2.*b + gm - .5*gp;
-    pe = -2.*b + gp - .5*gm;
-    for (int i = 0; i < Np_old; ++i) {
-      double z = ((double)rand()/(double)RAND_MAX);
-      if (z < pg) {Np--; Ng++;}
-      else if (z < pg+pe) {Np--; Ne++;}
+    pg = (2.*b + gm - .5*gp)*dt;
+    pe = (-2.*b + gp - .5*gm)*dt;
+    if (pe > 0. && pg > 0.) {
+      for (int i = 0; i < Np_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pg) {Np--; Ng++;}
+        else if (z < pg+pe) {Np--; Ne++;}
+      }
     }
-    if (pg < 0. || pe < 0.) cerr << "Error in +, t = " << t << "\t" << pg << ", " << pe << endl;
+    else if (pe > 0. && pg < 0.) {
+      // + -> e dir, g -> + reverse
+      double p_rev = -pg*fg;
+      for (int i = 0; i < Np_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pe) {Np--; Ne++;}
+        else if (z < pe+p_rev) {Np++; Ng--;}
+      }
+    }
+    else if (pe < 0. && pg > 0.) {
+      // + -> g dir, e -> + reverse
+      double p_rev = -pe*fe;
+      for (int i = 0; i < Np_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pg) {Np--; Ng++;}
+        else if (z < pg+p_rev) {Np++; Ne--;}
+      }
+    }
+    else {
+      // e,g -> + reverse
+      double p_rev_e = -pe*fe, p_rev_g = -pg*fg;
+      for (int i = 0; i < Np_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < p_rev_g) {Ng--; Np++;}
+        else if (z < p_rev_g+p_rev_e) {Np++; Ne--;}
+      }
+    }
+    //if (pg < -threshold || pe < -threshold) cerr << "Reverse jump from +, t = " << t << "\t" << pg << ", " << pe << endl;
 
     // From - (positive rates for 2b < gp - gm/2)
-    pg = -2.*b + gm - .5*gp;
-    pe = 2.*b + gp - .5*gm;
-    for (int i = 0; i < Nm_old; ++i) {
-      double z = ((double)rand()/(double)RAND_MAX);
-      if (z < pg) {Nm--; Ng++;}
-      else if (z < pg+pe) {Nm--; Ne++;}
+    pg = (-2.*b + gm - .5*gp)*dt;
+    pe = (2.*b + gp - .5*gm)*dt;
+    if (pe > 0. && pg > 0.) {
+      for (int i = 0; i < Nm_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pg) {Nm--; Ng++;}
+        else if (z < pg+pe) {Nm--; Ne++;}
+      }
     }
-    if (pg < 0. || pe < 0.) cerr << "Error in -, t = " << t << "\t" << pg << ", " << pe << endl;
+    else if (pe > 0. && pg < 0.) {
+      // + -> e dir, g -> + reverse
+      double p_rev = -pg*fg;
+      for (int i = 0; i < Nm_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pe) {Nm--; Ne++;}
+        else if (z < pe+p_rev) {Nm++; Ng--;}
+      }
+    }
+    else if (pe < 0. && pg > 0.) {
+      // + -> g dir, e -> + reverse
+      double p_rev = -pe*fe;
+      for (int i = 0; i < Nm_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < pg) {Nm--; Ng++;}
+        else if (z < pg+p_rev) {Nm++; Ne--;}
+      }
+    }
+    else {
+      // e,g -> + reverse
+      double p_rev_e = -pe*fe, p_rev_g = -pg*fg;
+      for (int i = 0; i < Nm_old; ++i) {
+        double z = ((double)rand()/(double)RAND_MAX);
+        if (z < p_rev_g) {Ng--; Nm++;}
+        else if (z < p_rev_g+p_rev_e) {Nm++; Ne--;}
+      }
+    }
+    //if (pg < -threshold || pe < -threshold) cerr << "Reverse jump from -, t = " << t << "\t" << pg << ", " << pe << endl;
   }
 
   return 0;

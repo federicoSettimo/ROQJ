@@ -53,7 +53,7 @@ ax[1].plot(t, Np, label = r'$+$')
 ax[1].plot(t, Nm, label = r'$-$')
 ax[1].set_ylabel(r'Populations')
 ax[1].set_xlabel(r'$t$')
-ax[1].legend(loc = "lower right")
+ax[1].legend(loc = "upper right")
 
 ax[2].plot(t,gp, label = r'$\gamma_+$')
 ax[2].plot(t,gm, label = r'$\gamma_-$')
