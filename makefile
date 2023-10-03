@@ -106,6 +106,16 @@ driven_gamma_minus_ens: Examples/driven_gamma_minus_ens.cpp roqj_state.o
 	./Examples/driven_gamma_minus_ens.x
 	python3.10 Examples/driven_gamma_minus_ens.py	
 
+driven_gamma_minus_ens_new: Examples/driven_gamma_minus_ens_new.cpp roqj_state.o
+	g++ Examples/driven_gamma_minus_ens_new.cpp roqj_state.o -o Examples/driven_gamma_minus_ens_new.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_gamma_minus_ens_new.x
+	python3.10 Examples/driven_gamma_minus_ens.py	
+
+driven: Examples/driven.cpp
+	g++ Examples/driven.cpp -o Examples/driven.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven.x
+	python3.10 Examples/driven.py	
+
 driven_gamma_minus_no_det_evol: Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o
 	g++ Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o -o Examples/driven_gamma_minus_no_det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_gamma_minus_no_det_evol.x
