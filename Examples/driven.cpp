@@ -70,6 +70,14 @@ Matrix2cd comm (const Matrix2cd &A, const Matrix2cd &B) {return A*B - B*A;}
 
 Matrix2cd anticomm (const Matrix2cd &A, const Matrix2cd &B) {return A*B + B*A;}
 
+Vector3d BlochVector (const Matrix2cd &A) {
+  Vector3d r;
+  r << real((A*sigma_x).trace()), real((A*sigma_y).trace()), real((A*sigma_z).trace());
+  return r;
+}
+
+double TD (const Matrix2cd &A, const Matrix2cd &B) {return .5*(BlochVector(A) - BlochVector(B)).norm();}
+
 int Nensemble = 10000;
 int Npsi = Nensemble, Ng = 0, Ne = 0, Np = 0, Nm = 0;
 int Npsi_old, Ng_old, Ne_old, Np_old, Nm_old;
@@ -162,6 +170,7 @@ int main () {
     rho = fpsi*projector(psi) + fg*projector(ground_state) + fe*projector(excited_state) + fp*projector(plus_state) + fm*projector(minus_state);
     out << observable(rho) << " " << observable(exact) << " " << observable(projector(psi)) << endl;
     out << coherence(rho) << " " << coherence(exact) << " " << coherence(projector(psi)) << endl;
+    out << TD(rho, exact) << endl;
     out << fpsi << " " << fg << " " << fe << " " << fp << " " << fm << endl;
     out << gp << " " << gm << " " << b << endl;
 
