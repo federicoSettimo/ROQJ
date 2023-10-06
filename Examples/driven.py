@@ -83,7 +83,7 @@ ax[0,0].set_ylabel(r'$tr[\rho\sigma_{z(x)}]$, solid(dashed)')
 ax[0,0].legend(loc = "upper left")
 ax[0,0].set_title(r'$z,x$ componets (left) and error (right, dotted)')
 axx = ax[0,0].twinx()
-axx.plot(t, error, ':', color = "blue")
+axx.plot(t, error, ':', color = "blue", alpha = .1)
 axx.set_ylabel(r'$TD(\rho,\rho_{ex})$')
 
 
