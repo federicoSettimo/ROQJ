@@ -116,6 +116,11 @@ driven: Examples/driven.cpp
 	./Examples/driven.x
 	python3.10 Examples/driven.py	
 
+driven_2: Examples/driven_2.cpp
+	g++ Examples/driven_2.cpp -o Examples/driven_2.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_2.x
+	python3.10 Examples/driven_2.py	
+
 driven_gamma_minus_no_det_evol: Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o
 	g++ Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o -o Examples/driven_gamma_minus_no_det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_gamma_minus_no_det_evol.x
@@ -215,6 +220,9 @@ roqj_gen_qubit.o: roqj_gen_qubit.cpp roqj_gen_qubit.h
 
 roqj_state.o: roqj_state.h roqj_state.cpp
 	g++ roqj_state.cpp -c -o roqj_state.o -std=c++20 -O3 -ffast-math -fno-math-errno
+
+functions.o: functions.cpp functions.h
+	g++ functions.cpp -c -o functions.o -std=c++20 -O3 -ffast-math -fno-math-errno
 
 roqj_multiple_obs.o: roqj_multiple_obs.h roqj_multiple_obs.cpp
 	g++ roqj_multiple_obs.cpp -c -o roqj_multiple_obs.o -std=c++20 -O3 -ffast-math -fno-math-errno
