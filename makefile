@@ -121,6 +121,26 @@ driven_2: Examples/driven_2.cpp
 	./Examples/driven_2.x
 	python3.10 Examples/driven_2.py	
 
+driven_2ens: Examples/driven_2ens.cpp
+	g++ Examples/driven_2ens.cpp -o Examples/driven_2ens.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_2ens.x
+	python3.10 Examples/driven_2ens.py	
+
+driven_error: Examples/driven_error.cpp
+	g++ Examples/driven_error.cpp -o Examples/driven_error.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_error.x
+	python3.10 Examples/driven_error.py
+
+driven_adaptive_dt: Examples/driven_adaptive_dt.cpp
+	g++ Examples/driven_adaptive_dt.cpp -o Examples/driven_adaptive_dt.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_adaptive_dt.x
+	python3.10 Examples/driven_adaptive_dt.py
+
+driven_4d: Examples/driven_4d.cpp
+	g++ Examples/driven_4d.cpp -o Examples/driven_4d.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_4d.x
+	python3.10 Examples/driven_4d.py	
+
 driven_gamma_minus_no_det_evol: Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o
 	g++ Examples/driven_gamma_minus_no_det_evol.cpp roqj_state.o -o Examples/driven_gamma_minus_no_det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_gamma_minus_no_det_evol.x
