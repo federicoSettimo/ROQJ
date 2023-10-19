@@ -64,7 +64,7 @@ public:
 
 
   // Performs the jump process
-  virtual VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi) const;
+  virtual VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi, double t) const;
 
 
   // Displays the info on the runs
@@ -127,15 +127,13 @@ public:
   void set_initial_state ();
 
   // Performs the jump with only 2 possible channels
-  VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi) const override;
+  VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi, double t) const override;
 };
 
 
 
-
-
 // ------------------------- FUNCTIONS -------------------------
-// Checks whether the VectorXdtor is normalized
+// Checks whether the vector is normalized
 bool isNormalized (const VectorXcd &psi);
 
 // Commutator
@@ -147,18 +145,22 @@ MatrixXcd anticomm (const MatrixXcd &A, const MatrixXcd &B);
 // Projector |psi><psi|
 MatrixXcd projector (const VectorXcd &psi);
 
-// Density operator from its Bloch VectorXdtor representation
-MatrixXcd BlochToMatrix (double x, double y, double z);
+// Density operator from its Bloch vector representation
+Matrix2cd BlochToMatrix (double x, double y, double z);
+Matrix2cd BlochToMatrix (const Vector3d &r);
+
+// Bloch vector from state
+Vector3d MatrixToBloch (const Matrix2cd &rho);
 
 // Partial trace over the qubit 1 and 2
-MatrixXcd tr_1 (const MatrixXcd &rho);
-MatrixXcd tr_2 (const MatrixXcd &rho);
+Matrix2cd tr_1 (const Matrix4cd &rho);
+Matrix2cd tr_2 (const Matrix4cd &rho);
 
 // Tensor product between two 2x2 matrices
-MatrixXcd tens (const MatrixXcd &A, const MatrixXcd &B);
+Matrix4cd tens (const Matrix2cd &A, const Matrix2cd &B);
 
 // Tensor producto between two 2-dim vectors
-VectorXcd tens_state (const Vector2cd &psi1, const Vector2cd &psi2);
+Vector4cd tens_state (const Vector2cd &psi1, const Vector2cd &psi2);
 
 // Entropy for a qubit
 double entropy (const Matrix2cd &rho);
@@ -185,4 +187,4 @@ static Eigen::VectorXcd ground_state {{0.,1.}};
 static Eigen::VectorXcd excited_state {{1.,0.}};
 static Eigen::VectorXcd plus_state {{1./sqrt(2.),1./sqrt(2.)}};
 static Eigen::VectorXcd minus_state {{1./sqrt(2.),-1./sqrt(2.)}};
-#endif
+#endif 
