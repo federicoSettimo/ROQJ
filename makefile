@@ -126,6 +126,11 @@ driven_2ens: Examples/driven_2ens.cpp
 	./Examples/driven_2ens.x
 	python3.10 Examples/driven_2ens.py	
 
+driven_2ens_gpm_equal: Examples/driven_2ens_gpm_equal.cpp
+	g++ Examples/driven_2ens_gpm_equal.cpp -o Examples/driven_2ens_gpm_equal.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_2ens_gpm_equal.x
+	python3.10 Examples/driven_2ens_gpm_equal.py	
+
 driven_error: Examples/driven_error.cpp
 	g++ Examples/driven_error.cpp -o Examples/driven_error.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_error.x
@@ -135,6 +140,31 @@ driven_adaptive_dt: Examples/driven_adaptive_dt.cpp
 	g++ Examples/driven_adaptive_dt.cpp -o Examples/driven_adaptive_dt.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_adaptive_dt.x
 	python3.10 Examples/driven_adaptive_dt.py
+
+driven_adaptive_4d: Examples/driven_adaptive_4d.cpp
+	g++ Examples/driven_adaptive_4d.cpp -o Examples/driven_adaptive_4d.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_adaptive_4d.x
+	python3.10 Examples/driven_adaptive_4d.py
+
+driven_long_double: Examples/driven_long_double.cpp
+	g++ Examples/driven_long_double.cpp -o Examples/driven_long_double.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_long_double.x
+	python3.10 Examples/driven_2.py	
+
+driven_5d_gen: Examples/driven_5d_gen.cpp
+	g++ Examples/driven_5d_gen.cpp -o Examples/driven_5d_gen.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_5d_gen.x
+	python3.10 Examples/driven_5d_gen.py	
+
+driven_roqj_state: Examples/driven_roqj_state.cpp roqj_state.o
+	g++ Examples/driven_roqj_state.cpp roqj_state.o -o Examples/driven_roqj_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_roqj_state.x
+	python3.10 Examples/plot.py	
+
+plot_eigs_det_5d: Examples/plot_eigs_det_5d.cpp
+	g++ Examples/plot_eigs_det_5d.cpp -o Examples/plot_eigs_det_5d.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/plot_eigs_det_5d.x
+	python3.10 Examples/plot_eigs_det_5d.py
 
 driven_4d: Examples/driven_4d.cpp
 	g++ Examples/driven_4d.cpp -o Examples/driven_4d.x -std=c++20 -O3 -ffast-math -fno-math-errno
