@@ -4,7 +4,7 @@ roqj.o: roqj.h roqj.cpp
 ph_cov: roqj.o Examples/ph_cov.cpp
 	g++ Examples/ph_cov.cpp roqj.o -o Examples/ph_cov.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov.x
-	python3 Examples/plot.py "Phase covariant, undriven" "$$\rho_{01}(t)$$" #ph_cov.png
+	python3 Examples/plot.py "Eternally non-Markovian, driven" "$$ tr[\rho\sigma_z] $$" #ph_cov.png
 
 ph_cov_non_P: roqj.o roqj_pop.o Examples/ph_cov_non_P.cpp
 	g++ Examples/ph_cov_non_P.cpp roqj.o roqj_pop.o -o Examples/ph_cov_non_P.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -136,6 +136,11 @@ driven_error: Examples/driven_error.cpp
 	./Examples/driven_error.x
 	python3.10 Examples/driven_error.py
 
+enm_pm: roqj_state.o Examples/enm_pm.cpp
+	g++ Examples/enm_pm.cpp roqj_state.o -o Examples/enm_pm.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/enm_pm.x
+	python3.10 Examples/plot.py "Eternally non-Markovian, jumps to $$ |\pm> $$ " "$$ tr[\rho\sigma_z] $$" #ph_cov.png
+
 driven_adaptive_dt: Examples/driven_adaptive_dt.cpp
 	g++ Examples/driven_adaptive_dt.cpp -o Examples/driven_adaptive_dt.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_adaptive_dt.x
@@ -154,12 +159,42 @@ driven_long_double: Examples/driven_long_double.cpp
 driven_5d_gen: Examples/driven_5d_gen.cpp
 	g++ Examples/driven_5d_gen.cpp -o Examples/driven_5d_gen.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_5d_gen.x
-	python3.10 Examples/driven_5d_gen.py	
+	python3.10 Examples/driven_5d_gen.py
+
+driven_5d_rectangle: Examples/driven_5d_rectangle.cpp
+	g++ Examples/driven_5d_rectangle.cpp -o Examples/driven_5d_rectangle.x -std=c++20 -O3
+	./Examples/driven_5d_rectangle.x
+	python3.10 Examples/driven_5d_rectangle.py
 
 driven_roqj_state: Examples/driven_roqj_state.cpp roqj_state.o
 	g++ Examples/driven_roqj_state.cpp roqj_state.o -o Examples/driven_roqj_state.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/driven_roqj_state.x
-	python3.10 Examples/plot.py	
+	python3.10 Examples/plot.py "Strong driving: $$ \beta = 10 \gamma_\pm $$" "$$ tr[\rho\sigma_z] $$"
+
+driven_roqj_nM: Examples/driven_roqj_nM.cpp roqj_state.o
+	g++ Examples/driven_roqj_nM.cpp roqj_state.o -o Examples/driven_roqj_nM.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_roqj_nM.x
+	python3.10 Examples/plot.py "Driven, $$ \gamma_-<0 $$ from $$ t = \pi/2$$ " "$$ tr[\rho\sigma_z] $$"
+
+driven_nM_no_det_evol: Examples/driven_nM_no_det_evol.cpp roqj_state.o
+	g++ Examples/driven_nM_no_det_evol.cpp roqj_state.o -o Examples/driven_nM_no_det_evol.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/driven_nM_no_det_evol.x
+	python3.10 Examples/plot.py "Driven, $$ \gamma_-<0 $$ from $$ t = \pi/2$$ " "$$ tr[\rho\sigma_z] $$"
+
+enm_driven_5d_ens: Examples/enm_driven_5d_ens.cpp roqj_state.o
+	g++ Examples/enm_driven_5d_ens.cpp roqj_state.o -o Examples/enm_driven_5d_ens.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/enm_driven_5d_ens.x
+	python3.10 Examples/plot.py "EnM driven, $$ 2\beta = 1- \tanh t $$" "$$ tr[\rho\sigma_z] $$"
+
+3d_ph_cov_fixed_basis: Examples/3d_ph_cov_fixed_basis.cpp
+	g++ Examples/3d_ph_cov_fixed_basis.cpp -o Examples/3d_ph_cov_fixed_basis.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/3d_ph_cov_fixed_basis.x
+	python3.10 Examples/3d_ph_cov_fixed_basis.py
+
+3d_ph_cov_roqj: Examples/3d_ph_cov_roqj.cpp roqj_state.o
+	g++ Examples/3d_ph_cov_roqj.cpp roqj_state.o -o Examples/3d_ph_cov_roqj.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/3d_ph_cov_roqj.x
+	python3.10 Examples/plot.py	"3d phase covariant, fixed basis, $$\gamma_{0,1} = -\tanh(t)$$" "$$\rho_{0,1}$$" #ph_cov.png
 
 plot_eigs_det_5d: Examples/plot_eigs_det_5d.cpp
 	g++ Examples/plot_eigs_det_5d.cpp -o Examples/plot_eigs_det_5d.x -std=c++20 -O3 -ffast-math -fno-math-errno
@@ -224,7 +259,12 @@ ph_cov_2_qubits: roqj.o Examples/ph_cov_2_qubits.cpp
 ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 	g++ Examples/ph_cov_x.cpp roqj.o -o Examples/ph_cov_x.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ph_cov_x.x
-	python3 Examples/plot.py "Phase covariant, eigenstates of $$\sigma_{x}$$" "$$ tr[\rho(t)\sigma_{x}]$$" #Ph_cov_x.png
+	python3.10 Examples/plot.py "Phase covariant, eigenstates of $$\sigma_{x}$$" "$$ tr[\rho(t)\sigma_{x}]$$" #Ph_cov_x.png
+
+Lambda: roqj_state.o Examples/Lambda.cpp
+	g++ Examples/Lambda.cpp roqj_state.o -o Examples/Lambda.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/Lambda.x
+	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|rho|dark> $$"
 
 ensemble: roqj.o roqj_mixed.o Examples/ensemble.cpp
 	g++ Examples/ensemble.cpp roqj.o roqj_mixed.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
