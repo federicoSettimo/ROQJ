@@ -266,6 +266,11 @@ Lambda: roqj_state.o Examples/Lambda.cpp
 	./Examples/Lambda.x
 	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|rho|dark> $$"
 
+Lambda_comp_basis: roqj_state.o Examples/Lambda_comp_basis.cpp
+	g++ Examples/Lambda_comp_basis.cpp roqj_state.o -o Examples/Lambda_comp_basis.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/Lambda_comp_basis.x
+	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|rho|dark> $$"
+
 ensemble: roqj.o roqj_mixed.o Examples/ensemble.cpp
 	g++ Examples/ensemble.cpp roqj.o roqj_mixed.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/ensemble.x
