@@ -214,7 +214,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
 
       if (z < real(R.trace())*_dt || real(R.trace()) < 0) {// Jump
         psi[i] = this->jump(R,z,psi[i],t);
-        jumped[i] = !jumped[i];
+        jumped[i] = true;
       }
       else {// Free evolution
         MatrixXcd K = H(t) - 0.5*I*Gamma(t);
@@ -222,7 +222,7 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
       }
       psi[i] = psi[i].normalized();
       for (int j = 0; j < _dim_Hilbert_space; ++j) {
-        if (abs(psi[i](j)) < _threshold)
+        if (abs(psi[i](j)) < 1e-10)
           psi[i](j) = 0.;
       }
       psi[i] = psi[i].normalized();
@@ -373,6 +373,49 @@ VectorXcd qubit_roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi, 
   return VectorXcd::Ones(2).normalized();
 }
 
+
+
+
+
+
+
+
+// ------------------------- Qutrit ROQJ class -------------------------
+// --- Constructors
+qutrit_roqj::qutrit_roqj (int N_states, double t_i, double t_f, double dt, int N_copies, bool print_trajectory, int N_traj_print, bool verbose, double threshold) {
+  srand(0);
+  initialize(N_states, t_i, t_f, dt, N_copies, 3, print_trajectory, N_traj_print, verbose, threshold);
+}
+
+// --- Jump
+VectorXcd qutrit_roqj::jump (const MatrixXcd &R, double z, const VectorXcd &psi, double t) const {
+  ComplexEigenSolver<MatrixXcd> eigs;
+  eigs.compute(R);
+  Vector3cd eigval = eigs.eigenvalues();
+  Matrix3cd eigvec = eigs.eigenvectors();
+
+  Vector3cd phi1 = eigvec.col(0), phi2 = eigvec.col(1), phi3 = eigvec.col(2);
+  if (real(phi1(0)) < 0. || (real(phi1(0)) < .0001 && real(phi1(1)) < 0.)) phi1 = -phi1;
+  if (real(phi2(0)) < 0. || (real(phi2(0)) < .0001 && real(phi2(1)) < 0.)) phi2 = -phi2;
+  if (real(phi3(0)) < 0. || (real(phi3(0)) < .0001 && real(phi3(1)) < 0.)) phi3 = -phi3;
+
+  double lambda1 = real(eigval[0]), lambda2 = real(eigval[1]), lambda3 = real(eigval[2]), pjump1 = lambda1*_dt, pjump2 = (lambda1+lambda2)*_dt;
+  if (lambda1 >= -_threshold && lambda2 >= -_threshold && lambda3 >= -_threshold) {// Normal jump
+    // With probability pjump1, it jumps to the first eigenstate of R
+    if (z <= pjump1)
+      return phi1;
+    else if (z <= pjump2)
+      return phi2;
+    else return phi3;
+  }
+  else {// Reverse jump ----- Not implemented??
+    cerr << "Negative rate - reverse jump at time " << t << ". NOT IMPLEMENTED\n";
+    cout << "Eigenvalues: " << lambda1 << ", " << lambda2 << ", " << lambda3 << endl;
+    cout << "State: " << psi.transpose() << endl;
+    exit(EXIT_FAILURE);
+  }
+  return VectorXcd::Ones(2).normalized();
+}
 
 
 

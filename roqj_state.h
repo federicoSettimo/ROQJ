@@ -121,7 +121,7 @@ public:
   */
   qubit_roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
 
-  // Setting initial state with a 2-d VectorXdtor
+  // Setting initial state with a 2-d vector
   void set_initial_state (const VectorXcd &psi);
   // Default initializer - Id/2
   void set_initial_state ();
@@ -130,6 +130,19 @@ public:
   VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi, double t) const override;
 };
 
+
+// ------------------------- Qubit ROQJ class -------------------------
+class qutrit_roqj : public roqj {
+public:
+  /* 
+    Parameters: (int) ensemble size, (double) intial time, (double) final time, (double) dt, (int) number of copies, (bool) print trajectory, (int) number of trajectories to print, (bool) verbose
+    Default values: N_states = 10000, t_i = 0, t_f = 10, dt = t_f/10000, N_copies = 1, print_trajectory = true, N_traj_print = 3, verbose = true
+  */
+  qutrit_roqj (int N_states = N_states_default, double t_i = t_i_default, double t_f = t_f_default, double dt = dt_default, int N_copies = N_copies_default, bool print_trajectory = true, int N_traj_print = N_traj_print_default, bool verbose = true, double threshold = threshold_default);
+
+  // Performs the jump with only 2 possible channels
+  VectorXcd jump (const MatrixXcd &R, double z, const VectorXcd &psi, double t) const override;
+};
 
 
 // ------------------------- FUNCTIONS -------------------------
