@@ -43,8 +43,7 @@ VectorXcd Phi (const VectorXcd &psi, double t, bool jumped) {
 }
 
 double observable (const MatrixXcd &rho) {
-    //return real((rho*projector(dark)).trace());
-    return real(rho(2,2));
+    return real((rho*projector(dark)).trace());
 }
 
 int main () {
