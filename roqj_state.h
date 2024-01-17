@@ -61,6 +61,7 @@ public:
 
   // One single iteration; to be run N_copies times. verbose = true: prints exact sol and trajectories
   VectorXd run_single_iterations (bool verbose = true) const;
+  MatrixXcd RK4 (const MatrixXcd &rho, double t) const; // Runge-Kutta 4 to simulate the exact evolution
 
 
   // Performs the jump process

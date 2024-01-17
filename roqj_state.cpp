@@ -160,7 +160,13 @@ VectorXd roqj::get_det_trajectory (string file_out) const {
   return traj;
 }
 
+MatrixXcd L (const MatrixXcd &rho, double t) {return -I*comm(H(t),rho) + J(rho,t) - .5*anticomm(Gamma(t),rho);}
 
+// Runge-Kutta 4
+MatrixXcd roqj::RK4 (const MatrixXcd &rho, double t) const {
+  MatrixXcd k1 = _dt * L(rho, t), k2 = _dt * L(rho + .5*k1, t + .5*_dt), k3 = _dt * L(rho + .5*k2, t + .5*_dt), k4 = _dt * L(rho + k3, t + _dt);
+  return (1./6.) * (k1 + 2.*k2 + 2.*k3 + k4);
+}
 // --- Run single iteration
 VectorXd roqj::run_single_iterations (bool verbose) const {
   VectorXd observables(_num_timesteps);
@@ -189,7 +195,8 @@ VectorXd roqj::run_single_iterations (bool verbose) const {
     // Prints and evolves the exact solution
     if (verbose) {
       out_ex << observable(rho_ex) << endl;
-      rho_ex = rho_ex + (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+      //rho_ex = rho_ex + (-complex<double>(0,1)*comm(H(t),rho_ex) + J(rho_ex,t) - 0.5*anticomm(Gamma(t),rho_ex))*_dt;
+      rho_ex += RK4(rho_ex, t);
       rho_ex /= rho_ex.trace();
     }
 
