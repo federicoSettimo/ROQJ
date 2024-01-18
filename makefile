@@ -264,12 +264,22 @@ ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 Lambda: roqj_state.o Examples/Lambda.cpp
 	g++ Examples/Lambda.cpp roqj_state.o -o Examples/Lambda.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/Lambda.x
-	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|rho|dark> $$"
+	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|\rho|dark> $$"
 
 Lambda_comp_basis: roqj_state.o Examples/Lambda_comp_basis.cpp
 	g++ Examples/Lambda_comp_basis.cpp roqj_state.o -o Examples/Lambda_comp_basis.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/Lambda_comp_basis.x
-	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|rho|dark> $$"
+	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|\rho|dark> $$"
+
+Lambda_force_dark: Examples/Lambda_force_dark.cpp
+	g++ Examples/Lambda_force_dark.cpp -o Examples/Lambda_force_dark.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/Lambda_force_dark.x
+	python3 Examples/plot.py "Lambda model, CP divisible, jumps to |dark>, $$ \Gamma_{31}=\Gamma_{32} $$, large driving " "$$ <dark|\rho|dark> $$"
+
+V_system: roqj_state.o Examples/V_system.cpp
+	g++ Examples/V_system.cpp roqj_state.o -o Examples/V_system.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/V_system.x
+	python3 Examples/plot.py "V model, CP divisible" "$$ <0|\rho|0> $$"
 
 ensemble: roqj.o roqj_mixed.o Examples/ensemble.cpp
 	g++ Examples/ensemble.cpp roqj.o roqj_mixed.o -o Examples/ensemble.x -std=c++20 -O3 -ffast-math -fno-math-errno
