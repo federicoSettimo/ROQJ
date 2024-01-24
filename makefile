@@ -264,12 +264,17 @@ ph_cov_x: roqj.o Examples/ph_cov_x.cpp
 Lambda: roqj_state.o Examples/Lambda.cpp
 	g++ Examples/Lambda.cpp roqj_state.o -o Examples/Lambda.x -std=c++20 -O3 -ffast-math -fno-math-errno
 	./Examples/Lambda.x
+	python3 Examples/plot.py "Lambda model, CP divisible, $$ \Gamma_{31}\ne\Gamma_{32} $$ " "$$ <dark|\rho|dark> $$"
+
+Lambda_basis_H: roqj_state.o Examples/Lambda_basis_H.cpp
+	g++ Examples/Lambda_basis_H.cpp roqj_state.o -o Examples/Lambda_basis_H.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/Lambda_basis_H.x
 	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|\rho|dark> $$"
 
-Lambda_comp_basis: roqj_state.o Examples/Lambda_comp_basis.cpp
-	g++ Examples/Lambda_comp_basis.cpp roqj_state.o -o Examples/Lambda_comp_basis.x -std=c++20 -O3 -ffast-math -fno-math-errno
-	./Examples/Lambda_comp_basis.x
-	python3 Examples/plot.py "Lambda model, CP divisible" "$$ <dark|\rho|dark> $$"
+Lambda+V_double_channel: Examples/Lambda+V_double_channel.cpp
+	g++ Examples/Lambda+V_double_channel.cpp -o Examples/Lambda+V_double_channel.x -std=c++20 -O3 -ffast-math -fno-math-errno
+	./Examples/Lambda+V_double_channel.x
+	python3 Examples/plot.py "Lambda(+V) model, CP divisible, jumps to |dark>, $$ \Gamma_{10}=\Gamma_{20} = .3 $$, $$ \Gamma_{01}=\Gamma_{01} = 1 $$ " "$$ <dark|\rho|dark> $$"
 
 Lambda_force_dark: Examples/Lambda_force_dark.cpp
 	g++ Examples/Lambda_force_dark.cpp -o Examples/Lambda_force_dark.x -std=c++20 -O3 -ffast-math -fno-math-errno
