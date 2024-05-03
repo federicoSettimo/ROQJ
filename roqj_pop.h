@@ -7,7 +7,7 @@
 #ifndef _ROQJ_POP_H_
 #define _ROQJ_POP_H_
 
-#include "roqj.h"
+#include "roqj_state.h"
 
 extern const int N_states_default, N_copies_default, dim_Hilbert_space_default, N_traj_print_default;
 extern const double t_i_default, t_f_default, dt_default, threshold_default;
@@ -31,6 +31,9 @@ public:
 
   // Prints the trajectories
   void get_trajectories (string file_out = "trajectories.txt");
+
+  // Sets initial state and eigenstates of R
+  void set_initial_state_R (const VectorXcd &psi);
 };
 
 
